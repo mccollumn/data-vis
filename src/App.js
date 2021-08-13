@@ -1,143 +1,66 @@
-import React, { useCallback } from "react";
+import React from "react";
+import { useForm } from "react-hook-form";
+import _ from "lodash";
 import "./App.css";
 import { ResponsiveBar } from "@nivo/bar";
-import { ResponsiveLine } from "@nivo/line";
-import { getData } from "./services/wtData";
+import LineGraph from "./components/LineGraph";
+import getData from "./services/wtData";
 import { dataBar } from "./data";
+import { DisplayModal } from "./components/DisplayModal";
 
 function App() {
-  const [dataAPI, setDataAPI] = React.useState([]);
+  const [dataAPITrend, setDataAPITrend] = React.useState([]);
+  const [dataAPIAgg, setDataAPIAgg] = React.useState([]);
 
-  React.useEffect(() => {
-    getData().then((data) => {
-      console.log("useEffect data:", data);
-      setDataAPI(data);
-    });
-  }, []);
+  const loadTrendReport = async (values, params) => {
+    console.log(values);
+    const data = await getData(values, params);
+    setDataAPITrend(data);
+    console.log("dataAPITrend:", data);
+  };
 
-  console.log("dataAPI:", dataAPI);
+  const loadAggReport = async (values, params) => {
+    console.log(values);
+    const data = await getData(values, params);
+    setDataAPIAgg(data);
+    console.log("dataAPIAgg:", data);
+  };
+
+  const loadReport = async (values) => {
+    const paramsTrend = {
+      start_period: "current_day-365",
+      end_period: "current_day-1",
+      language: "en-US",
+      format: "json",
+      suppress_error_codes: false,
+      range: 5,
+      period_type: "trend",
+    };
+    const paramsAgg = {
+      start_period: "current_day-365",
+      end_period: "current_day-1",
+      language: "en-US",
+      format: "json",
+      suppress_error_codes: false,
+      range: 5,
+      period_type: "agg",
+    };
+
+    loadTrendReport(values, paramsTrend);
+    loadAggReport(values, paramsAgg);
+  };
 
   return (
     <div className="App">
-      <BarGraph data={dataBar} />
-      <LineGraph data={dataAPI} />
+      <DisplayModal>
+        <ModalAction />
+        <InputForm loadReport={loadReport} />
+      </DisplayModal>
+      {/* <BarGraph data={dataBar} /> */}
+      <LineGraph data={dataAPITrend} />
     </div>
   );
 }
-
-const LineGraph = ({ data = [] }) => {
-  console.log("LineGraph data prop:", data);
-
-  const [dataLine, setDataLine] = React.useState([]);
-  const [isPopulated, setIsPopulated] = React.useState(false);
-
-  const getLineGraphData = useCallback(async (data) => {
-    if (data.length === 0) return [];
-    let graphData = [];
-    for (let item of data.data) {
-      let line = {};
-      const pageName = Object.keys(item).pop();
-      line.id = pageName;
-      line.data = [];
-      // line.color = "hsl(54, 70%, 50%)";
-
-      const rows = item[pageName].SubRows;
-      for (let row of rows) {
-        let point = {};
-        point.x = row.start_date;
-        point.y = row.measures.Visits;
-        line.data.push(point);
-      }
-
-      graphData.push(line);
-    }
-    console.log("graphData:", graphData);
-    return graphData;
-  }, []);
-
-  React.useEffect(() => {
-    if (!isPopulated) {
-      getLineGraphData(data).then((data) => {
-        console.log("getLineGraphData promise:", data);
-        setDataLine(data);
-        if (data.length > 0) setIsPopulated(true);
-      });
-      console.log("dataLine:", dataLine);
-    }
-  }, [data, dataLine, isPopulated, getLineGraphData]);
-
-  return (
-    <div className="App">
-      <div className="line" style={{ height: "400px" }}>
-        <ResponsiveLine
-          data={dataLine}
-          margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-          xScale={{ type: "point" }}
-          yScale={{
-            type: "linear",
-            min: "auto",
-            max: "auto",
-            stacked: true,
-            reverse: false,
-          }}
-          yFormat=" >-.2f"
-          axisTop={null}
-          axisRight={null}
-          axisBottom={{
-            orient: "bottom",
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: 0,
-            legend: "transportation",
-            legendOffset: 36,
-            legendPosition: "middle",
-          }}
-          axisLeft={{
-            orient: "left",
-            tickSize: 5,
-            tickPadding: 5,
-            tickRotation: 0,
-            legend: "count",
-            legendOffset: -40,
-            legendPosition: "middle",
-          }}
-          pointSize={10}
-          pointColor={{ theme: "background" }}
-          pointBorderWidth={2}
-          pointBorderColor={{ from: "serieColor" }}
-          pointLabelYOffset={-12}
-          useMesh={true}
-          legends={[
-            {
-              anchor: "bottom-right",
-              direction: "column",
-              justify: false,
-              translateX: 100,
-              translateY: 0,
-              itemsSpacing: 0,
-              itemDirection: "left-to-right",
-              itemWidth: 80,
-              itemHeight: 20,
-              itemOpacity: 0.75,
-              symbolSize: 12,
-              symbolShape: "circle",
-              symbolBorderColor: "rgba(0, 0, 0, .5)",
-              effects: [
-                {
-                  on: "hover",
-                  style: {
-                    itemBackground: "rgba(0, 0, 0, .03)",
-                    itemOpacity: 1,
-                  },
-                },
-              ],
-            },
-          ]}
-        />
-      </div>
-    </div>
-  );
-};
 
 const BarGraph = ({ data }) => {
   const dataBar = data;
@@ -145,6 +68,83 @@ const BarGraph = ({ data }) => {
   return (
     <div className="bar" style={{ height: "400px" }}>
       <ResponsiveBar data={dataBar} keys={["earnings"]} indexBy="quarter" />
+    </div>
+  );
+};
+
+const ModalAction = ({ onClick }) => {
+  return (
+    <button type="button" onClick={onClick} className="primary">
+      Select Report
+    </button>
+  );
+};
+
+const InputElement = ({ register, errors = {}, ...props }) => {
+  const errorMsg = _.get(errors[props.name], "message");
+  return (
+    <div className="input-element">
+      <input ref={register} {...props} />
+      <div className="error-msg">{errorMsg}</div>
+    </div>
+  );
+};
+
+const InputForm = ({ loadReport, handleClose }) => {
+  const API_ACCOUNT = process.env.REACT_APP_WT_API_ACCOUNT;
+  const API_USERNAME = process.env.REACT_APP_WT_API_USERNAME;
+  const API_PASSWORD = process.env.REACT_APP_WT_API_PASSWORD;
+
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm();
+  const onSubmit = (values) => {
+    loadReport(values);
+    handleClose();
+  };
+
+  return (
+    <div className="input-form">
+      <form onSubmit={handleSubmit(onSubmit)}>
+        {/* <InputElement
+          type="text"
+          placeholder="Account Name"
+          name="account"
+          register={register({
+            required: "Please enter an account",
+          })}
+          errors={errors}
+        /> */}
+
+        <input
+          type="text"
+          placeholder="Account Name"
+          defaultValue={API_ACCOUNT}
+          {...register("accountName", { required: true })}
+        />
+
+        <input
+          type="text"
+          placeholder="Username"
+          defaultValue={API_USERNAME}
+          {...register("username", { required: true })}
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          defaultValue={API_PASSWORD}
+          {...register("password", { required: true })}
+        />
+
+        {errors.accountName && <span>Account name is required</span>}
+        {errors.username && <span>Username is required</span>}
+        {errors.password && <span>Password is required</span>}
+
+        <button>Get Report</button>
+      </form>
     </div>
   );
 };

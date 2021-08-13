@@ -6,17 +6,12 @@ const WT_API_ENDPOINT =
 const API_USERNAME = process.env.REACT_APP_WT_API_USERNAME;
 const API_PASSWORD = process.env.REACT_APP_WT_API_PASSWORD;
 
-export const getData = async () => {
-  const params = {
-    start_period: "current_day-7",
-    end_period: "current_day-1",
-    language: "en-US",
-    format: "json",
-    suppress_error_codes: false,
-    range: 5,
-    period_type: "trend",
+const getData = async (creds, params) => {
+  const auth = {
+    username: `${creds.accountName}\\${creds.username}`,
+    password: creds.password,
   };
-  const auth = { username: API_USERNAME, password: API_PASSWORD };
+  console.log("Auth:", auth);
   try {
     const response = await axios.get(WT_API_ENDPOINT, {
       params: params,
@@ -28,3 +23,5 @@ export const getData = async () => {
     console.log("Error", error);
   }
 };
+
+export default getData;
