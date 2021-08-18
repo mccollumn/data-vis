@@ -7,6 +7,7 @@ import LineGraph from "./components/LineGraph";
 import getData from "./services/wtData";
 import { dataBar } from "./data";
 import { DisplayModal } from "./components/DisplayModal";
+import Table from "./components/Table";
 
 function App() {
   const [dataAPITrend, setDataAPITrend] = React.useState([]);
@@ -58,6 +59,7 @@ function App() {
       </DisplayModal>
       {/* <BarGraph data={dataBar} /> */}
       <LineGraph data={dataAPITrend} />
+      <Table />
     </div>
   );
 }
