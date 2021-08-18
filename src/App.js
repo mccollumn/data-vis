@@ -14,14 +14,12 @@ function App() {
   const [dataAPIAgg, setDataAPIAgg] = React.useState([]);
 
   const loadTrendReport = async (values, params) => {
-    console.log(values);
     const data = await getData(values, params);
     setDataAPITrend(data);
     console.log("dataAPITrend:", data);
   };
 
   const loadAggReport = async (values, params) => {
-    console.log(values);
     const data = await getData(values, params);
     setDataAPIAgg(data);
     console.log("dataAPIAgg:", data);
@@ -43,7 +41,7 @@ function App() {
       language: "en-US",
       format: "json",
       suppress_error_codes: false,
-      range: 5,
+      // range: 5,
       period_type: "agg",
     };
 
@@ -59,7 +57,7 @@ function App() {
       </DisplayModal>
       {/* <BarGraph data={dataBar} /> */}
       <LineGraph data={dataAPITrend} />
-      <Table />
+      <Table data={dataAPIAgg} />
     </div>
   );
 }

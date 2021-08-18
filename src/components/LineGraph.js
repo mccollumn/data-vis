@@ -2,14 +2,12 @@ import React from "react";
 import { ResponsiveLine } from "@nivo/line";
 
 const LineGraph = ({ data = [] }) => {
-  console.log("LineGraph data prop:", data);
-
   const [dataLine, setDataLine] = React.useState([]);
 
   const getLineGraphData = (data) => {
     if (data.length === 0) return [];
     let graphData = [];
-    for (let item of data.data) {
+    for (const item of data.data) {
       let line = {};
       const pageName = Object.keys(item).pop();
       line.id = pageName;
@@ -17,7 +15,7 @@ const LineGraph = ({ data = [] }) => {
       // line.color = "hsl(54, 70%, 50%)";
 
       const rows = item[pageName].SubRows;
-      for (let row of rows) {
+      for (const row of rows) {
         let point = {};
         point.x = row.start_date;
         point.y = row.measures.Visits;
@@ -26,15 +24,12 @@ const LineGraph = ({ data = [] }) => {
 
       graphData.push(line);
     }
-    console.log("graphData:", graphData);
     return graphData;
   };
 
   React.useEffect(() => {
     setDataLine(getLineGraphData(data));
   }, [data]);
-
-  console.log("dataLine:", dataLine);
 
   return (
     <div className="App">

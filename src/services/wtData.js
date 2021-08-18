@@ -11,7 +11,6 @@ const getData = async (creds, params) => {
     username: `${creds.accountName}\\${creds.username}`,
     password: creds.password,
   };
-  console.log("Auth:", auth);
   try {
     const response = await axios.get(WT_API_ENDPOINT, {
       params: params,
