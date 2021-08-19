@@ -8,6 +8,7 @@ import getData from "./services/wtData";
 import { dataBar } from "./data";
 import { DisplayModal } from "./components/DisplayModal";
 import Table from "./components/Table";
+import TopNav from "./components/TopNav";
 
 function App() {
   const [dataAPITrend, setDataAPITrend] = React.useState([]);
@@ -51,6 +52,7 @@ function App() {
 
   return (
     <div className="App">
+      <TopNav />
       <DisplayModal>
         <ModalAction />
         <InputForm loadReport={loadReport} />
@@ -80,16 +82,6 @@ const ModalAction = ({ onClick }) => {
   );
 };
 
-const InputElement = ({ register, errors = {}, ...props }) => {
-  const errorMsg = _.get(errors[props.name], "message");
-  return (
-    <div className="input-element">
-      <input ref={register} {...props} />
-      <div className="error-msg">{errorMsg}</div>
-    </div>
-  );
-};
-
 const InputForm = ({ loadReport, handleClose }) => {
   const API_ACCOUNT = process.env.REACT_APP_WT_API_ACCOUNT;
   const API_USERNAME = process.env.REACT_APP_WT_API_USERNAME;
@@ -108,16 +100,6 @@ const InputForm = ({ loadReport, handleClose }) => {
   return (
     <div className="input-form">
       <form onSubmit={handleSubmit(onSubmit)}>
-        {/* <InputElement
-          type="text"
-          placeholder="Account Name"
-          name="account"
-          register={register({
-            required: "Please enter an account",
-          })}
-          errors={errors}
-        /> */}
-
         <input
           type="text"
           placeholder="Account Name"
