@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
   menuButton: { marginRight: theme.spacing(2) },
 }));
 
-export const TopNav = () => {
+export const TopNav = ({ onLogin, auth }) => {
   const classes = useStyles();
 
   const [open, setOpen] = React.useState(false);
@@ -57,7 +57,7 @@ export const TopNav = () => {
             Data Visualization
           </Typography>
           {/* <Button>Login</Button> */}
-          <Login />
+          <Login onLogin={onLogin} isLoggedIn={auth} />
         </Toolbar>
       </AppBar>
       <Drawer variant="persistent" anchor="left" open={open}>
@@ -65,14 +65,14 @@ export const TopNav = () => {
           <ChevronLeftIcon />
         </IconButton>
         <Divider />
-        <ProfileReportList />
-        <ProfileReportList profileID="113070" />
+        <ProfileReportList auth={auth} />
+        <ProfileReportList profileID="113070" auth={auth} />
       </Drawer>
     </div>
   );
 };
 
-const ProfileReportList = ({ profileID = "" }) => {
+const ProfileReportList = ({ profileID = "", auth }) => {
   const [open, setOpen] = React.useState(false);
   const [options, setOptions] = React.useState([]);
   const loading = open && options.length === 0;
@@ -85,17 +85,17 @@ const ProfileReportList = ({ profileID = "" }) => {
     }
 
     (async () => {
-      const response = await getData("", { format: "json" }, profileID);
+      const response = await getData(auth, { format: "json" }, profileID);
 
       if (active) {
-        setOptions(response);
+        setOptions(response.data);
       }
     })();
 
     return () => {
       active = false;
     };
-  }, [loading, profileID]);
+  }, [loading, profileID, auth]);
 
   React.useEffect(() => {
     if (!open) {
@@ -139,7 +139,7 @@ const ProfileReportList = ({ profileID = "" }) => {
   );
 };
 
-const Login = () => {
+const Login = ({ onLogin, isLoggedIn }) => {
   const [openLogin, setOpenLogin] = React.useState(false);
 
   const toggleDrawer = () => {
@@ -156,34 +156,30 @@ const Login = () => {
         onClose={toggleDrawer}
         // onOpen={toggleDrawer}
       >
-        <LoginForm />
+        <LoginForm onLogin={onLogin} />
+        {isLoggedIn && <p>Logged In</p>}
       </Drawer>
     </div>
   );
 };
 
-const LoginForm = ({ loadReport, handleClose }) => {
+const LoginForm = ({ onLogin }) => {
   const API_ACCOUNT = process.env.REACT_APP_WT_API_ACCOUNT;
   const API_USERNAME = process.env.REACT_APP_WT_API_USERNAME;
   const API_PASSWORD = process.env.REACT_APP_WT_API_PASSWORD;
 
   const classes = useStyles();
 
-  // const {
-  //   handleSubmit,
-  //   register,
-  //   formState: { errors },
-  // } = useForm();
-  // const onSubmit = (values) => {
-  //   console.log(values);
-  //   loadReport(values);
-  //   handleClose();
-  // };
-
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
-    setAccount();
-    console.log("Account", account, "Username:", username);
+    const auth = {
+      username: `${account}\\${username}`,
+      password: password,
+    };
+    const response = await getData(auth);
+    if (response.status === 200) {
+      onLogin(auth);
+    }
   };
 
   const [account, setAccount] = React.useState("");
@@ -191,14 +187,12 @@ const LoginForm = ({ loadReport, handleClose }) => {
   const [password, setPassword] = React.useState("");
 
   return (
-    // <form onSubmit={handleSubmit(onSubmit)} className={classes.form}>
     <form onSubmit={onSubmit} className={classes.form}>
       <TextField
         required
         label="Account Name"
         defaultValue={API_ACCOUNT}
         onInput={(e) => setAccount(e.target.value)}
-        // {...register("accountName", { required: true })}
       />
 
       <TextField
@@ -206,7 +200,6 @@ const LoginForm = ({ loadReport, handleClose }) => {
         label="Username"
         defaultValue={API_USERNAME}
         onInput={(e) => setUsername(e.target.value)}
-        // {...register("username", { required: true })}
       />
 
       <TextField
@@ -215,12 +208,7 @@ const LoginForm = ({ loadReport, handleClose }) => {
         label="Password"
         defaultValue={API_PASSWORD}
         onInput={(e) => setPassword(e.target.value)}
-        // {...register("password", { required: true })}
       />
-
-      {/* {errors.accountName && <span>Account name is required</span>}
-      {errors.username && <span>Username is required</span>}
-      {errors.password && <span>Password is required</span>} */}
 
       <Button type="submit">Login</Button>
     </form>

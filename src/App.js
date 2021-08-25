@@ -14,6 +14,15 @@ function App() {
   const [dataAPITrend, setDataAPITrend] = React.useState([]);
   const [dataAPIAgg, setDataAPIAgg] = React.useState([]);
 
+  const [auth, setAuth] = React.useState();
+  const handleLogin = (auth) => {
+    // setAuth({
+    //   username: `${creds.accountName}\\${creds.username}`,
+    //   password: creds.password,
+    // });
+    setAuth(auth);
+  };
+
   const loadTrendReport = async (values, params) => {
     const data = await getData(values, params);
     setDataAPITrend(data);
@@ -52,7 +61,7 @@ function App() {
 
   return (
     <div className="App">
-      <TopNav />
+      <TopNav onLogin={handleLogin} auth={auth} />
       <DisplayModal>
         <ModalAction />
         <InputForm loadReport={loadReport} />
