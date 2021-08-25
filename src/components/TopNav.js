@@ -29,7 +29,14 @@ const useStyles = makeStyles((theme) => ({
   menuButton: { marginRight: theme.spacing(2) },
 }));
 
-export const TopNav = ({ onLogin, auth }) => {
+export const TopNav = ({
+  onLogin,
+  auth,
+  setProfile,
+  setReport,
+  setStartDate,
+  setEndDate,
+}) => {
   const classes = useStyles();
 
   const [open, setOpen] = React.useState(false);
@@ -65,14 +72,55 @@ export const TopNav = ({ onLogin, auth }) => {
           <ChevronLeftIcon />
         </IconButton>
         <Divider />
-        <ProfileReportList auth={auth} />
-        <ProfileReportList profileID="113070" auth={auth} />
+        <DateSelection setStartDate={setStartDate} setEndDate={setEndDate} />
+        <ProfileReportList
+          auth={auth}
+          setProfile={setProfile}
+          setReport={setReport}
+        />
+        <ProfileReportList
+          profileID="113070"
+          auth={auth}
+          setProfile={setProfile}
+          setReport={setReport}
+        />
       </Drawer>
     </div>
   );
 };
 
-const ProfileReportList = ({ profileID = "", auth }) => {
+const DateSelection = ({ setStartDate, setEndDate }) => {
+  const handleChange = (event) => {
+    if (event.target.name === "start_date") {
+      setStartDate(event.target.value);
+    }
+    if (event.target.name === "end_date") {
+      setEndDate(event.target.value);
+    }
+  };
+
+  return (
+    <div>
+      <TextField
+        label="Start Date"
+        name="start_date"
+        type="date"
+        onChange={handleChange}
+        InputLabelProps={{ shrink: true }}
+      />
+
+      <TextField
+        label="End Date"
+        name="end_date"
+        type="date"
+        onChange={handleChange}
+        InputLabelProps={{ shrink: true }}
+      />
+    </div>
+  );
+};
+
+const ProfileReportList = ({ profileID = "", auth, setProfile, setReport }) => {
   const [open, setOpen] = React.useState(false);
   const [options, setOptions] = React.useState([]);
   const loading = open && options.length === 0;
@@ -103,8 +151,17 @@ const ProfileReportList = ({ profileID = "", auth }) => {
     }
   }, [open]);
 
+  const handleChange = (event, value) => {
+    if (!profileID) {
+      setProfile(value);
+      return;
+    }
+    setReport(value);
+  };
+
   return (
     <Autocomplete
+      disabled={!auth && true}
       style={{ width: 300 }}
       open={open}
       onOpen={() => {
@@ -113,6 +170,7 @@ const ProfileReportList = ({ profileID = "", auth }) => {
       onClose={() => {
         setOpen(false);
       }}
+      onChange={handleChange}
       getOptionSelected={(option, value) => option.name === value.name}
       getOptionLabel={(option) => option.name}
       options={options}

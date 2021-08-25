@@ -11,6 +11,8 @@ export const Table = ({ data = [] }) => {
   const [columns, setColumns] = useState([]);
   const gridRef = useRef(null);
 
+  console.log("Table Data:", data);
+
   const getRowData = (data) => {
     if (data.length === 0) return [];
     const dimensionOne = data.definition.dimensions[0].name;

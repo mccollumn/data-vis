@@ -16,52 +16,76 @@ function App() {
 
   const [auth, setAuth] = React.useState();
   const handleLogin = (auth) => {
-    // setAuth({
-    //   username: `${creds.accountName}\\${creds.username}`,
-    //   password: creds.password,
-    // });
     setAuth(auth);
   };
 
-  const loadTrendReport = async (values, params) => {
-    const data = await getData(values, params);
-    setDataAPITrend(data);
-    console.log("dataAPITrend:", data);
-  };
+  const [profile, setProfile] = React.useState();
+  const [report, setReport] = React.useState();
+  const [startDate, setStartDate] = React.useState();
+  const [endDate, setEndDate] = React.useState();
 
-  const loadAggReport = async (values, params) => {
-    const data = await getData(values, params);
-    setDataAPIAgg(data);
-    console.log("dataAPIAgg:", data);
-  };
+  const loadTrendReport = React.useCallback(
+    async (profileID, reportID, params) => {
+      const response = await getData(auth, params, profileID, reportID);
+      setDataAPITrend(response.data);
+    },
+    [auth]
+  );
 
-  const loadReport = async (values) => {
-    const paramsTrend = {
-      start_period: "current_day-365",
-      end_period: "current_day-1",
-      language: "en-US",
-      format: "json",
-      suppress_error_codes: false,
-      range: 5,
-      period_type: "trend",
-    };
-    const paramsAgg = {
-      start_period: "current_day-365",
-      end_period: "current_day-1",
-      language: "en-US",
-      format: "json",
-      suppress_error_codes: false,
-      // range: 5,
-      period_type: "agg",
-    };
+  const loadAggReport = React.useCallback(
+    async (profileID, reportID, params) => {
+      const response = await getData(auth, params, profileID, reportID);
+      setDataAPIAgg(response.data);
+    },
+    [auth]
+  );
 
-    loadTrendReport(values, paramsTrend);
-    loadAggReport(values, paramsAgg);
-  };
+  const loadReport = React.useCallback(
+    async (profileID, reportID, startDate, endDate) => {
+      const start = startDate.replace("-", "m").replace("-", "d");
+      const end = endDate.replace("-", "m").replace("-", "d");
+
+      const paramsTrend = {
+        start_period: start,
+        end_period: end,
+        language: "en-US",
+        format: "json",
+        suppress_error_codes: false,
+        range: 5,
+        period_type: "trend",
+      };
+      const paramsAgg = {
+        start_period: start,
+        end_period: end,
+        language: "en-US",
+        format: "json",
+        suppress_error_codes: false,
+        // range: 5,
+        period_type: "agg",
+      };
+
+      loadTrendReport(profileID, reportID, paramsTrend);
+      loadAggReport(profileID, reportID, paramsAgg);
+    },
+    [loadAggReport, loadTrendReport]
+  );
+
+  React.useEffect(() => {
+    if (profile && report && startDate && endDate) {
+      loadReport(profile.ID, report.ID, startDate, endDate);
+    }
+  }, [profile, report, startDate, endDate, loadReport]);
 
   return (
     <div className="App">
-      <TopNav onLogin={handleLogin} auth={auth} />
+      <TopNav
+        onLogin={handleLogin}
+        auth={auth}
+        setProfile={setProfile}
+        setReport={setReport}
+        setStartDate={setStartDate}
+        setEndDate={setEndDate}
+      />
       <DisplayModal>
         <ModalAction />
         <InputForm loadReport={loadReport} />
