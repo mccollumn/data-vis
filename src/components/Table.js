@@ -1,56 +1,47 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { AgGridColumn, AgGridReact } from "ag-grid-react";
 import "ag-grid-enterprise";
 import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-alpine-dark.css";
+import getRowData from "../services/getRowData";
 
 export const Table = ({ data = [] }) => {
+  // Totals row
+  // https://stackoverflow.com/questions/65177239/how-to-enable-or-show-total-row-in-footer-of-ag-grid-table
+
   const [rowData, setRowData] = useState([]);
   const [gridApi, setGridApi] = useState(null);
   const [columnApi, setColumnApi] = useState(null);
   const [columns, setColumns] = useState([]);
+  const [dimensions, setDimensions] = useState([]);
   const gridRef = useRef(null);
-
-  console.log("Table Data:", data);
-
-  const getRowData = (data) => {
-    if (data.length === 0) return [];
-    const dimensionOne = data.definition.dimensions[0].name;
-    const subRows = data.data[0].SubRows[0];
-    let tableData = [];
-
-    for (const [item, values] of Object.entries(subRows)) {
-      let row = { [dimensionOne]: item };
-      if (values.attributes) {
-        for (const [attrib, value] of Object.entries(values.attributes)) {
-          row[attrib] = value;
-        }
-      }
-      for (const [measure, measureValue] of Object.entries(values.measures)) {
-        row[measure] = measureValue;
-      }
-      tableData.push(row);
-    }
-    return tableData;
-  };
-
-  const getColumns = (data) => {
-    if (data.length === 0) return [];
-    let columns = [];
-    for (const [column] of Object.entries(data.pop())) {
-      const obj = { field: column };
-      columns.push(obj);
-    }
-    return columns;
-  };
-
-  useEffect(() => {
-    setRowData(getRowData(data));
-  }, [data]);
 
   const onGridReady = (params) => {
     setGridApi(params.api);
     setColumnApi(params.columnApi);
+  };
+
+  const getDimColumns = (values) => {
+    if (values.length === 0) return "";
+    let nameArray = [];
+    values.forEach((dim, index) => {
+      nameArray[index] = dim.name;
+    });
+    return nameArray.join(" > ");
+  };
+
+  const getDimensions = (data) => {
+    if (data.length === 0) return [];
+    return data.definition.dimensions;
+  };
+
+  const getMeasureNames = (data) => {
+    if (data.length === 0) return [];
+    let columns = [];
+    data.definition.measures.forEach((column) => {
+      columns.push({ field: column.name });
+    });
+    return columns;
   };
 
   const onButtonClick = (e) => {
@@ -62,6 +53,12 @@ export const Table = ({ data = [] }) => {
     console.log(`Selected Table nodes: ${selectedDataStringPresentation}`);
   };
 
+  useEffect(() => {
+    setDimensions(getDimensions(data));
+    setColumns(getMeasureNames(data));
+    setRowData(getRowData(data));
+  }, [data]);
+
   const gridOptions = {
     pagination: true,
   };
@@ -72,9 +69,11 @@ export const Table = ({ data = [] }) => {
     resizable: true,
   };
 
-  useEffect(() => {
-    setColumns(getColumns(rowData));
-  }, [rowData]);
+  const autoGroupColumnDef = {
+    headerName: getDimColumns(dimensions),
+    minWidth: 300,
+    cellRendererParams: { suppressCount: true },
+  };
 
   return (
     <div className="ag-theme-alpine-dark" style={{ height: 400, width: "90%" }}>
@@ -86,6 +85,11 @@ export const Table = ({ data = [] }) => {
         rowSelection="multiple"
         gridOptions={gridOptions}
         defaultColDef={defaultColDef}
+        autoGroupColumnDef={autoGroupColumnDef}
+        treeData={true}
+        animateRows={true}
+        groupDefaultExpanded={0}
+        getDataPath={(data) => data.Dimensions}
       >
         {columns.map((column) => (
           <AgGridColumn {...column} key={column.field} />
