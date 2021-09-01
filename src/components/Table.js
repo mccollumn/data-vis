@@ -6,20 +6,21 @@ import "ag-grid-community/dist/styles/ag-theme-alpine-dark.css";
 import getRowData from "../services/getRowData";
 
 export const Table = ({ data = [] }) => {
-  // Totals row
-  // https://stackoverflow.com/questions/65177239/how-to-enable-or-show-total-row-in-footer-of-ag-grid-table
-
-  const [rowData, setRowData] = useState([]);
   const [gridApi, setGridApi] = useState(null);
   const [columnApi, setColumnApi] = useState(null);
+  const [rowData, setRowData] = useState([]);
+  const [totals, setTotals] = useState([]);
   const [columns, setColumns] = useState([]);
   const [dimensions, setDimensions] = useState([]);
+  const [measures, setMeasures] = useState([]);
   const gridRef = useRef(null);
 
   const onGridReady = (params) => {
     setGridApi(params.api);
     setColumnApi(params.columnApi);
   };
+
+  const onFirstDataRendered = (params) => {};
 
   const getDimColumns = (values) => {
     if (values.length === 0) return "";
@@ -35,6 +36,11 @@ export const Table = ({ data = [] }) => {
     return data.definition.dimensions;
   };
 
+  const getMeasures = (data) => {
+    if (data.length === 0) return [];
+    return data.definition.measures;
+  };
+
   const getMeasureNames = (data) => {
     if (data.length === 0) return [];
     let columns = [];
@@ -42,6 +48,32 @@ export const Table = ({ data = [] }) => {
       columns.push({ field: column.name });
     });
     return columns;
+  };
+
+  const getTotals = (data) => {
+    if (data.length === 0) return [];
+    return [data.data[0].measures];
+  };
+
+  const valueFormatter = (params) => {
+    const measureValue = params.value;
+    if (measureValue === null) return;
+
+    const measureName = params.colDef.field;
+    const measureConfig = measures.find(
+      (measure) => measure.name === measureName
+    );
+    const measureFormat = measureConfig.measureFormatType;
+
+    const measureFormatted = new Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 2,
+    }).format(measureValue);
+
+    if (measureFormat === "percent") {
+      return measureFormatted + "%";
+    }
+
+    return measureFormatted;
   };
 
   const onButtonClick = (e) => {
@@ -55,12 +87,15 @@ export const Table = ({ data = [] }) => {
 
   useEffect(() => {
     setDimensions(getDimensions(data));
+    setMeasures(getMeasures(data));
     setColumns(getMeasureNames(data));
     setRowData(getRowData(data));
+    setTotals(getTotals(data));
   }, [data]);
 
   const gridOptions = {
     pagination: true,
+    paginationAutoPageSize: true,
   };
 
   const defaultColDef = {
@@ -71,15 +106,22 @@ export const Table = ({ data = [] }) => {
 
   const autoGroupColumnDef = {
     headerName: getDimColumns(dimensions),
-    minWidth: 300,
+    minWidth: 200,
     cellRendererParams: { suppressCount: true },
+    sortable: true,
+    pinned: "left",
+    autoHeight: true,
   };
 
   return (
-    <div className="ag-theme-alpine-dark" style={{ height: 400, width: "90%" }}>
+    <div
+      className="ag-theme-alpine-dark"
+      style={{ height: 400, width: "100%" }}
+    >
       <button onClick={onButtonClick}>Get selected rows</button>
       <AgGridReact
         onGridReady={onGridReady}
+        onFirstDataRendered={onFirstDataRendered}
         ref={gridRef}
         rowData={rowData}
         rowSelection="multiple"
@@ -90,9 +132,14 @@ export const Table = ({ data = [] }) => {
         animateRows={true}
         groupDefaultExpanded={0}
         getDataPath={(data) => data.Dimensions}
+        pinnedBottomRowData={totals}
       >
         {columns.map((column) => (
-          <AgGridColumn {...column} key={column.field} />
+          <AgGridColumn
+            {...column}
+            key={column.field}
+            valueFormatter={valueFormatter}
+          />
         ))}
       </AgGridReact>
     </div>
