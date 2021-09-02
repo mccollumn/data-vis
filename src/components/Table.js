@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import React from "react";
 import { AgGridColumn, AgGridReact } from "ag-grid-react";
 import "ag-grid-enterprise";
 import "ag-grid-community/dist/styles/ag-grid.css";
@@ -6,14 +6,9 @@ import "ag-grid-community/dist/styles/ag-theme-alpine-dark.css";
 import getRowData from "../services/getRowData";
 
 export const Table = ({ data = [] }) => {
-  const [gridApi, setGridApi] = useState(null);
-  const [columnApi, setColumnApi] = useState(null);
-  const [rowData, setRowData] = useState([]);
-  const [totals, setTotals] = useState([]);
-  const [columns, setColumns] = useState([]);
-  const [dimensions, setDimensions] = useState([]);
-  const [measures, setMeasures] = useState([]);
-  const gridRef = useRef(null);
+  const [gridApi, setGridApi] = React.useState(null);
+  const [columnApi, setColumnApi] = React.useState(null);
+  const gridRef = React.useRef(null);
 
   const onGridReady = (params) => {
     setGridApi(params.api);
@@ -29,30 +24,6 @@ export const Table = ({ data = [] }) => {
       nameArray[index] = dim.name;
     });
     return nameArray.join(" > ");
-  };
-
-  const getDimensions = (data) => {
-    if (data.length === 0) return [];
-    return data.definition.dimensions;
-  };
-
-  const getMeasures = (data) => {
-    if (data.length === 0) return [];
-    return data.definition.measures;
-  };
-
-  const getMeasureNames = (data) => {
-    if (data.length === 0) return [];
-    let columns = [];
-    data.definition.measures.forEach((column) => {
-      columns.push({ field: column.name });
-    });
-    return columns;
-  };
-
-  const getTotals = (data) => {
-    if (data.length === 0) return [];
-    return [data.data[0].measures];
   };
 
   const valueFormatter = (params) => {
@@ -85,13 +56,10 @@ export const Table = ({ data = [] }) => {
     console.log(`Selected Table nodes: ${selectedDataStringPresentation}`);
   };
 
-  useEffect(() => {
-    setDimensions(getDimensions(data));
-    setMeasures(getMeasures(data));
-    setColumns(getMeasureNames(data));
-    setRowData(getRowData(data));
-    setTotals(getTotals(data));
-  }, [data]);
+  const { dimensions, measures, columns, totals, rowData } = React.useMemo(
+    () => renderData(data),
+    [data]
+  );
 
   const gridOptions = {
     pagination: true,
@@ -113,11 +81,10 @@ export const Table = ({ data = [] }) => {
     autoHeight: true,
   };
 
+  const filterParams = { valueFormatter: valueFormatter };
+
   return (
-    <div
-      className="ag-theme-alpine-dark"
-      style={{ height: 400, width: "100%" }}
-    >
+    <div className="ag-theme-alpine-dark" style={{ height: 400, width: "95%" }}>
       <button onClick={onButtonClick}>Get selected rows</button>
       <AgGridReact
         onGridReady={onGridReady}
@@ -133,17 +100,69 @@ export const Table = ({ data = [] }) => {
         groupDefaultExpanded={0}
         getDataPath={(data) => data.Dimensions}
         pinnedBottomRowData={totals}
+        onFilterChanged={function (props) {
+          console.log("onFilterChanged", props);
+        }}
+        onFilterModified={function (props) {
+          console.log("onFilterModified", props);
+        }}
       >
         {columns.map((column) => (
           <AgGridColumn
             {...column}
             key={column.field}
             valueFormatter={valueFormatter}
+            filter="agNumberColumnFilter"
+            filterParams={filterParams}
           />
         ))}
       </AgGridReact>
     </div>
   );
+};
+
+const getDimensions = (data) => {
+  if (!data || data.length === 0) return [];
+  return data.definition.dimensions;
+};
+
+const getMeasures = (data) => {
+  if (!data || data.length === 0) return [];
+  return data.definition.measures;
+};
+
+const getMeasureNames = (data) => {
+  if (!data || data.length === 0) return [];
+  let columns = [];
+  data.definition.measures.forEach((column) => {
+    columns.push({ field: column.name });
+  });
+  return columns;
+};
+
+const getTotals = (data) => {
+  //   {
+  //     "PageViews": {
+  //         "filterType": "number",
+  //         "type": "greaterThan",
+  //         "filter": 3
+  //     }
+  // }
+
+  if (!data || data.length === 0) return [];
+  // const savedFilterModel = gridApi.getFilterModel();
+  // console.log(savedFilterModel);
+  return [data.data[0].measures];
+};
+
+const renderData = (data) => {
+  return {
+    dimensions: getDimensions(data),
+    measures: getMeasures(data),
+    columns: getMeasureNames(data),
+    totals: getTotals(data),
+    rowData: getRowData(data),
+  };
 };
 
 export default Table;
