@@ -21,6 +21,7 @@ import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import { useForm } from "react-hook-form";
 import getData from "../services/wtData";
+import { useGetData } from "../services/wtData";
 
 const useStyles = makeStyles((theme) => ({
   root: { flexGrow: 1 },
@@ -33,6 +34,7 @@ export const TopNav = ({
   onLogin,
   auth,
   setProfile,
+  profile,
   setReport,
   setStartDate,
   setEndDate,
@@ -79,7 +81,8 @@ export const TopNav = ({
           setReport={setReport}
         />
         <ProfileReportList
-          profileID="113070"
+          profile={profile}
+          isReport={true}
           auth={auth}
           setProfile={setProfile}
           setReport={setReport}
@@ -120,43 +123,27 @@ const DateSelection = ({ setStartDate, setEndDate }) => {
   );
 };
 
-const ProfileReportList = ({ profileID = "", auth, setProfile, setReport }) => {
+const ProfileReportList = ({
+  profile = {},
+  isReport,
+  auth,
+  setProfile,
+  setReport,
+}) => {
   const [open, setOpen] = React.useState(false);
-  const [options, setOptions] = React.useState([]);
-  const loading = open && options.length === 0;
+  const { response: options = [], loading, error, makeRequest } = useGetData();
 
   React.useEffect(() => {
-    let active = true;
-
-    if (!loading) {
-      return undefined;
-    }
-
-    (async () => {
-      const response = await getData(auth, { format: "json" }, profileID);
-
-      if (active) {
-        setOptions(response.data);
-      }
-    })();
-
-    return () => {
-      active = false;
-    };
-  }, [loading, profileID, auth]);
-
-  React.useEffect(() => {
-    if (!open) {
-      setOptions([]);
-    }
-  }, [open]);
+    if (!auth) return;
+    makeRequest(auth, { format: "json" }, profile.ID);
+  }, [profile.ID, auth, makeRequest]);
 
   const handleChange = (event, value) => {
-    if (!profileID) {
-      setProfile(value);
+    if (isReport) {
+      setReport(value);
       return;
     }
-    setReport(value);
+    setProfile(value);
   };
 
   return (
@@ -178,7 +165,7 @@ const ProfileReportList = ({ profileID = "", auth, setProfile, setReport }) => {
       renderInput={(params) => (
         <TextField
           {...params}
-          label={profileID ? "Reports" : "Profiles"}
+          label={isReport ? "Reports" : "Profiles"}
           variant="filled"
           InputProps={{
             ...params.InputProps,

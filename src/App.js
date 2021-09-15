@@ -9,10 +9,17 @@ import { dataBar } from "./data";
 import { DisplayModal } from "./components/DisplayModal";
 import Table from "./components/Table";
 import TopNav from "./components/TopNav";
+import { useGetData } from "./services/wtData";
 
 function App() {
-  const [dataAPITrend, setDataAPITrend] = React.useState([]);
-  const [dataAPIAgg, setDataAPIAgg] = React.useState([]);
+  // const [dataAPITrend, setDataAPITrend] = React.useState([]);
+  // const [dataAPIAgg, setDataAPIAgg] = React.useState([]);
+
+  const { response: dataAPITrend, makeRequest: trendMakeRequest } =
+    useGetData();
+  const { response: dataAPIAgg, makeRequest: aggMakeRequest } = useGetData();
+  console.log("Agg response:", dataAPIAgg);
+  console.log("Trend response:", dataAPITrend);
 
   const [auth, setAuth] = React.useState();
   const handleLogin = (auth) => {
@@ -26,16 +33,18 @@ function App() {
 
   const loadTrendReport = React.useCallback(
     async (profileID, reportID, params) => {
-      const response = await getData(auth, params, profileID, reportID);
-      setDataAPITrend(response.data);
+      // const response = await getData(auth, params, profileID, reportID);
+      // setDataAPITrend(response.data);
+      trendMakeRequest(auth, params, profileID, reportID);
     },
     [auth]
   );
 
   const loadAggReport = React.useCallback(
     async (profileID, reportID, params) => {
-      const response = await getData(auth, params, profileID, reportID);
-      setDataAPIAgg(response.data);
+      // const response = await getData(auth, params, profileID, reportID);
+      // setDataAPIAgg(response.data);
+      aggMakeRequest(auth, params, profileID, reportID);
     },
     [auth]
   );
@@ -82,6 +91,7 @@ function App() {
         onLogin={handleLogin}
         auth={auth}
         setProfile={setProfile}
+        profile={profile}
         setReport={setReport}
         setStartDate={setStartDate}
         setEndDate={setEndDate}
@@ -91,7 +101,7 @@ function App() {
         <InputForm loadReport={loadReport} />
       </DisplayModal>
       {/* <BarGraph data={dataBar} /> */}
-      <LineGraph data={dataAPITrend} />
+      {/* <LineGraph data={dataAPITrend} /> */}
       <Table data={dataAPIAgg} />
     </div>
   );

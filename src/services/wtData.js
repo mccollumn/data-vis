@@ -1,4 +1,5 @@
 import axios from "axios";
+import React from "react";
 
 const WT_API_ENDPOINT = "https://ws.webtrends.com/v3/Reporting/profiles/";
 
@@ -24,3 +25,38 @@ const getData = async (auth, params, profileID, reportID = "") => {
 };
 
 export default getData;
+
+// -----------------------
+
+export const useGetData = () => {
+  const [response, setResponse] = React.useState();
+  const [loading, setLoading] = React.useState();
+  const [error, setError] = React.useState();
+
+  const makeRequest = React.useCallback(
+    async (auth, params, profileID = "", reportID = "") => {
+      try {
+        const url = !profileID
+          ? WT_API_ENDPOINT
+          : `${WT_API_ENDPOINT}${profileID}/reports/${reportID}`;
+
+        setLoading(true);
+
+        const response = await axios.get(url, {
+          params: params,
+          auth: auth,
+        });
+        setResponse(response.data);
+        setLoading(false);
+
+        console.log("useGetData:", response);
+      } catch (error) {
+        setError(error);
+        console.error("Error", error);
+      }
+    },
+    []
+  );
+
+  return { response, loading, error, makeRequest };
+};
