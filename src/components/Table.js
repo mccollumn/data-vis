@@ -9,6 +9,7 @@ export const Table = ({ data = [] }) => {
   const [gridApi, setGridApi] = React.useState(null);
   const [columnApi, setColumnApi] = React.useState(null);
   const gridRef = React.useRef(null);
+  let isFiltered = false;
 
   const onGridReady = (params) => {
     setGridApi(params.api);
@@ -56,6 +57,12 @@ export const Table = ({ data = [] }) => {
     console.log(`Selected Table nodes: ${selectedDataStringPresentation}`);
   };
 
+  const updateTotals = () => {
+    const columns = columnApi.columnModel.gridColumns;
+    isFiltered = columns.some((column) => column.filterActive === true);
+    gridApi.setPinnedBottomRowData(isFiltered ? false : totals);
+  };
+
   const { dimensions, measures, columns, totals, rowData } = React.useMemo(
     () => renderData(data),
     [data]
@@ -101,11 +108,9 @@ export const Table = ({ data = [] }) => {
         getDataPath={(data) => data.Dimensions}
         pinnedBottomRowData={totals}
         onFilterChanged={function (props) {
-          console.log("onFilterChanged", props);
+          updateTotals();
         }}
-        onFilterModified={function (props) {
-          console.log("onFilterModified", props);
-        }}
+        onFilterModified={function (props) {}}
       >
         {columns.map((column) => (
           <AgGridColumn
@@ -141,17 +146,7 @@ const getMeasureNames = (data) => {
 };
 
 const getTotals = (data) => {
-  //   {
-  //     "PageViews": {
-  //         "filterType": "number",
-  //         "type": "greaterThan",
-  //         "filter": 3
-  //     }
-  // }
-
   if (!data || data.length === 0) return [];
-  // const savedFilterModel = gridApi.getFilterModel();
-  // console.log(savedFilterModel);
   return [data.data[0].measures];
 };
 
