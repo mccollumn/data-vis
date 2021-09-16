@@ -1,5 +1,6 @@
 import axios from "axios";
 import React from "react";
+import { AuthContext } from "../providers/AuthProvider";
 
 const WT_API_ENDPOINT = "https://ws.webtrends.com/v3/Reporting/profiles/";
 
@@ -32,9 +33,11 @@ export const useGetData = () => {
   const [response, setResponse] = React.useState();
   const [loading, setLoading] = React.useState();
   const [error, setError] = React.useState();
+  const { auth } = React.useContext(AuthContext);
 
   const makeRequest = React.useCallback(
-    async (auth, params, profileID = "", reportID = "") => {
+    async (params, profileID = "", reportID = "") => {
+      if (!auth) return;
       try {
         const url = !profileID
           ? WT_API_ENDPOINT
@@ -55,7 +58,7 @@ export const useGetData = () => {
         console.error("Error", error);
       }
     },
-    []
+    [auth]
   );
 
   return { response, loading, error, makeRequest };

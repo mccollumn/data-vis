@@ -33,20 +33,16 @@ function App() {
 
   const loadTrendReport = React.useCallback(
     async (profileID, reportID, params) => {
-      // const response = await getData(auth, params, profileID, reportID);
-      // setDataAPITrend(response.data);
-      trendMakeRequest(auth, params, profileID, reportID);
+      trendMakeRequest(params, profileID, reportID);
     },
-    [auth]
+    [trendMakeRequest]
   );
 
   const loadAggReport = React.useCallback(
     async (profileID, reportID, params) => {
-      // const response = await getData(auth, params, profileID, reportID);
-      // setDataAPIAgg(response.data);
-      aggMakeRequest(auth, params, profileID, reportID);
+      aggMakeRequest(params, profileID, reportID);
     },
-    [auth]
+    [aggMakeRequest]
   );
 
   const loadReport = React.useCallback(
@@ -89,7 +85,6 @@ function App() {
     <div className="App">
       <TopNav
         onLogin={handleLogin}
-        auth={auth}
         setProfile={setProfile}
         profile={profile}
         setReport={setReport}

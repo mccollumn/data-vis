@@ -22,6 +22,7 @@ import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import { useForm } from "react-hook-form";
 import getData from "../services/wtData";
 import { useGetData } from "../services/wtData";
+import { AuthContext, AuthProvider } from "../providers/AuthProvider";
 
 const useStyles = makeStyles((theme) => ({
   root: { flexGrow: 1 },
@@ -32,7 +33,6 @@ const useStyles = makeStyles((theme) => ({
 
 export const TopNav = ({
   onLogin,
-  auth,
   setProfile,
   profile,
   setReport,
@@ -42,6 +42,8 @@ export const TopNav = ({
   const classes = useStyles();
 
   const [open, setOpen] = React.useState(false);
+
+  const { auth } = React.useContext(AuthContext);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -81,9 +83,9 @@ export const TopNav = ({
           setReport={setReport}
         />
         <ProfileReportList
+          auth={auth}
           profile={profile}
           isReport={true}
-          auth={auth}
           setProfile={setProfile}
           setReport={setReport}
         />
@@ -125,8 +127,8 @@ const DateSelection = ({ setStartDate, setEndDate }) => {
 
 const ProfileReportList = ({
   profile = {},
-  isReport,
   auth,
+  isReport,
   setProfile,
   setReport,
 }) => {
@@ -134,9 +136,8 @@ const ProfileReportList = ({
   const { response: options = [], loading, error, makeRequest } = useGetData();
 
   React.useEffect(() => {
-    if (!auth) return;
-    makeRequest(auth, { format: "json" }, profile.ID);
-  }, [profile.ID, auth, makeRequest]);
+    makeRequest({ format: "json" }, profile.ID);
+  }, [profile.ID, makeRequest]);
 
   const handleChange = (event, value) => {
     if (isReport) {
@@ -215,12 +216,15 @@ const LoginForm = ({ onLogin }) => {
 
   const classes = useStyles();
 
+  const { setAuth } = React.useContext(AuthContext);
+
   const onSubmit = async (event) => {
     event.preventDefault();
     const auth = {
       username: `${account}\\${username}`,
       password: password,
     };
+    setAuth(auth);
     const response = await getData(auth);
     if (response.status === 200) {
       onLogin(auth);
