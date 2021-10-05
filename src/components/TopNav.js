@@ -32,7 +32,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const TopNav = ({
-  onLogin,
   setProfile,
   profile,
   setReport,
@@ -67,8 +66,7 @@ export const TopNav = ({
           <Typography variant="h6" className={classes.title}>
             Data Visualization
           </Typography>
-          {/* <Button>Login</Button> */}
-          <Login onLogin={onLogin} isLoggedIn={auth} />
+          <Login />
         </Toolbar>
       </AppBar>
       <Drawer variant="persistent" anchor="left" open={open}>
@@ -185,7 +183,7 @@ const ProfileReportList = ({
   );
 };
 
-const Login = ({ onLogin, isLoggedIn }) => {
+const Login = () => {
   const [openLogin, setOpenLogin] = React.useState(false);
 
   const toggleDrawer = () => {
@@ -202,14 +200,13 @@ const Login = ({ onLogin, isLoggedIn }) => {
         onClose={toggleDrawer}
         // onOpen={toggleDrawer}
       >
-        <LoginForm onLogin={onLogin} />
-        {isLoggedIn && <p>Logged In</p>}
+        <LoginForm />
       </Drawer>
     </div>
   );
 };
 
-const LoginForm = ({ onLogin }) => {
+const LoginForm = () => {
   const API_ACCOUNT = process.env.REACT_APP_WT_API_ACCOUNT;
   const API_USERNAME = process.env.REACT_APP_WT_API_USERNAME;
   const API_PASSWORD = process.env.REACT_APP_WT_API_PASSWORD;
@@ -218,16 +215,24 @@ const LoginForm = ({ onLogin }) => {
 
   const { setAuth } = React.useContext(AuthContext);
 
+  // const { response = [], loading, error, makeRequest } = useGetData();
+
+  const [message, setMessage] = useState();
   const onSubmit = async (event) => {
     event.preventDefault();
     const auth = {
       username: `${account}\\${username}`,
       password: password,
     };
-    setAuth(auth);
     const response = await getData(auth);
+    // setAuth(auth);
+    // makeRequest();
+    console.log("Response:", response.status);
     if (response.status === 200) {
-      onLogin(auth);
+      setMessage(<p>Loggin Successful</p>);
+      setAuth(auth);
+    } else {
+      setMessage(<p>Login Failed</p>);
     }
   };
 
@@ -260,6 +265,7 @@ const LoginForm = ({ onLogin }) => {
       />
 
       <Button type="submit">Login</Button>
+      <div>{message}</div>
     </form>
   );
 };

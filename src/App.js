@@ -21,11 +21,6 @@ function App() {
   console.log("Agg response:", dataAPIAgg);
   console.log("Trend response:", dataAPITrend);
 
-  const [auth, setAuth] = React.useState();
-  const handleLogin = (auth) => {
-    setAuth(auth);
-  };
-
   const [profile, setProfile] = React.useState();
   const [report, setReport] = React.useState();
   const [startDate, setStartDate] = React.useState();
@@ -84,7 +79,6 @@ function App() {
   return (
     <div className="App">
       <TopNav
-        onLogin={handleLogin}
         setProfile={setProfile}
         profile={profile}
         setReport={setReport}
