@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -207,6 +207,8 @@ const Login = () => {
 };
 
 const LoginForm = () => {
+  // Currently reading input values instead of updating onChange
+
   const API_ACCOUNT = process.env.REACT_APP_WT_API_ACCOUNT;
   const API_USERNAME = process.env.REACT_APP_WT_API_USERNAME;
   const API_PASSWORD = process.env.REACT_APP_WT_API_PASSWORD;
@@ -215,26 +217,38 @@ const LoginForm = () => {
 
   const { setAuth } = React.useContext(AuthContext);
 
-  // const { response = [], loading, error, makeRequest } = useGetData();
+  // const { response = [], error, makeRequest } = useGetData();
 
   const [message, setMessage] = useState();
   const onSubmit = async (event) => {
     event.preventDefault();
+
     const auth = {
-      username: `${account}\\${username}`,
-      password: password,
+      username: `${accountRef.current.value}\\${usernameRef.current.value}`,
+      password: passwordRef.current.value,
     };
+
+    // const auth = {
+    //   username: `${account}\\${username}`,
+    //   password: password,
+    // };
+
+    console.log(auth);
     const response = await getData(auth);
     // setAuth(auth);
-    // makeRequest();
+    // await makeRequest();
     console.log("Response:", response.status);
     if (response.status === 200) {
-      setMessage(<p>Loggin Successful</p>);
+      setMessage(<p>Login Successful</p>);
       setAuth(auth);
     } else {
       setMessage(<p>Login Failed</p>);
     }
   };
+
+  const accountRef = useRef("");
+  const usernameRef = useRef("");
+  const passwordRef = useRef("");
 
   const [account, setAccount] = React.useState("");
   const [username, setUsername] = React.useState("");
@@ -247,6 +261,7 @@ const LoginForm = () => {
         label="Account Name"
         defaultValue={API_ACCOUNT}
         onInput={(e) => setAccount(e.target.value)}
+        inputRef={accountRef}
       />
 
       <TextField
@@ -254,6 +269,7 @@ const LoginForm = () => {
         label="Username"
         defaultValue={API_USERNAME}
         onInput={(e) => setUsername(e.target.value)}
+        inputRef={usernameRef}
       />
 
       <TextField
@@ -262,6 +278,7 @@ const LoginForm = () => {
         label="Password"
         defaultValue={API_PASSWORD}
         onInput={(e) => setPassword(e.target.value)}
+        inputRef={passwordRef}
       />
 
       <Button type="submit">Login</Button>
