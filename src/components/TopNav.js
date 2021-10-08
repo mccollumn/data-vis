@@ -134,10 +134,11 @@ const ProfileReportList = ({
   const { response: options = [], loading, error, makeRequest } = useGetData();
 
   React.useEffect(() => {
-    makeRequest({ format: "json" }, profile.ID);
+    makeRequest({ params: { format: "json" }, profileID: profile.ID });
   }, [profile.ID, makeRequest]);
 
   const handleChange = (event, value) => {
+    if (value === null) return;
     if (isReport) {
       setReport(value);
       return;
@@ -217,9 +218,20 @@ const LoginForm = () => {
 
   const { setAuth } = React.useContext(AuthContext);
 
-  // const { response = [], error, makeRequest } = useGetData();
-
+  const { status, makeRequest } = useGetData();
   const [message, setMessage] = useState();
+  const [userCreds, setUserCreds] = useState();
+
+  React.useEffect(() => {
+    if (!status) return;
+    if (status === 200) {
+      setMessage(<p>Login Successful</p>);
+      setAuth(userCreds);
+    } else {
+      setMessage(<p>Login Failed</p>);
+    }
+  }, [setAuth, userCreds, status]);
+
   const onSubmit = async (event) => {
     event.preventDefault();
 
@@ -233,17 +245,8 @@ const LoginForm = () => {
     //   password: password,
     // };
 
-    console.log(auth);
-    const response = await getData(auth);
-    // setAuth(auth);
-    // await makeRequest();
-    console.log("Response:", response.status);
-    if (response.status === 200) {
-      setMessage(<p>Login Successful</p>);
-      setAuth(auth);
-    } else {
-      setMessage(<p>Login Failed</p>);
-    }
+    makeRequest({ creds: auth });
+    setUserCreds(auth);
   };
 
   const accountRef = useRef("");

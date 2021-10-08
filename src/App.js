@@ -28,14 +28,14 @@ function App() {
 
   const loadTrendReport = React.useCallback(
     async (profileID, reportID, params) => {
-      trendMakeRequest(params, profileID, reportID);
+      trendMakeRequest({ params, profileID, reportID });
     },
     [trendMakeRequest]
   );
 
   const loadAggReport = React.useCallback(
     async (profileID, reportID, params) => {
-      aggMakeRequest(params, profileID, reportID);
+      aggMakeRequest({ params, profileID, reportID });
     },
     [aggMakeRequest]
   );
@@ -60,7 +60,6 @@ function App() {
         language: "en-US",
         format: "json",
         suppress_error_codes: false,
-        // range: 5,
         period_type: "agg",
       };
 
@@ -90,7 +89,7 @@ function App() {
         <InputForm loadReport={loadReport} />
       </DisplayModal>
       {/* <BarGraph data={dataBar} /> */}
-      {/* <LineGraph data={dataAPITrend} /> */}
+      <LineGraph data={dataAPITrend} />
       <Table data={dataAPIAgg} />
     </div>
   );

@@ -4,21 +4,26 @@ import { ResponsiveLine } from "@nivo/line";
 const LineGraph = ({ data = [] }) => {
   const [dataLine, setDataLine] = React.useState([]);
 
+  const getPrimaryMeasure = (data) => {
+    if (!data.definition) return "";
+    const measures = data.definition.measures;
+    return measures.find((element) => element.columnID === 0);
+  };
+
   const getLineGraphData = (data) => {
     if (data.length === 0) return [];
     let graphData = [];
     for (const item of data.data) {
       let line = {};
-      const pageName = Object.keys(item).pop();
-      line.id = pageName;
+      const itemName = Object.keys(item).pop();
+      line.id = itemName;
       line.data = [];
-      // line.color = "hsl(54, 70%, 50%)";
 
-      const rows = item[pageName].SubRows;
+      const rows = item[itemName].SubRows;
       for (const row of rows) {
         let point = {};
         point.x = row.start_date;
-        point.y = row.measures.Visits;
+        point.y = row.measures[getPrimaryMeasure(data).name];
         line.data.push(point);
       }
 
@@ -28,8 +33,11 @@ const LineGraph = ({ data = [] }) => {
   };
 
   React.useEffect(() => {
+    if (data.length === 0) return;
     setDataLine(getLineGraphData(data));
   }, [data]);
+
+  console.log("Line Data:", dataLine);
 
   return (
     <div className="App">
@@ -53,7 +61,7 @@ const LineGraph = ({ data = [] }) => {
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 0,
-            legend: "transportation",
+            // legend: "transportation",
             legendOffset: 36,
             legendPosition: "middle",
           }}
@@ -62,7 +70,7 @@ const LineGraph = ({ data = [] }) => {
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 0,
-            legend: "count",
+            legend: getPrimaryMeasure(data).name,
             legendOffset: -40,
             legendPosition: "middle",
           }}

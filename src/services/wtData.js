@@ -33,11 +33,13 @@ export const useGetData = () => {
   const [response, setResponse] = React.useState();
   const [loading, setLoading] = React.useState();
   const [error, setError] = React.useState();
+  const [status, setStatus] = React.useState();
   const { auth } = React.useContext(AuthContext);
 
   const makeRequest = React.useCallback(
-    async (params, profileID = "", reportID = "") => {
-      if (!auth) return;
+    async ({ params, profileID = "", reportID = "", creds }) => {
+      const loginCredentials = creds || auth;
+      if (!loginCredentials) return;
       try {
         const url = !profileID
           ? WT_API_ENDPOINT
@@ -47,9 +49,10 @@ export const useGetData = () => {
 
         const response = await axios.get(url, {
           params: params,
-          auth: auth,
+          auth: loginCredentials,
         });
         setResponse(response.data);
+        setStatus(response.status);
         setLoading(false);
 
         console.log("useGetData:", response);
@@ -61,5 +64,5 @@ export const useGetData = () => {
     [auth]
   );
 
-  return { response, loading, error, makeRequest };
+  return { response, loading, error, status, makeRequest };
 };
