@@ -1,13 +1,30 @@
 import React from "react";
 import { ResponsiveLine } from "@nivo/line";
 
-const LineGraph = ({ data = [] }) => {
+const LineGraph = ({ data = [], startDate, endDate }) => {
   const [dataLine, setDataLine] = React.useState([]);
 
   const getPrimaryMeasure = (data) => {
     if (!data.definition) return "";
     const measures = data.definition.measures;
     return measures.find((element) => element.columnID === 0);
+  };
+
+  let monthArray = [];
+  const formatDate = (dateStr) => {
+    const day = dateStr.slice(8);
+    const month = dateStr.slice(5, 7);
+    const startMonth = startDate.slice(5, 7);
+    const endMonth = endDate.slice(5, 7);
+    const rangeMonths = endMonth - startMonth;
+    if (rangeMonths === 0) {
+      return day;
+    }
+    if (monthArray.includes(month)) {
+      return "-";
+    }
+    monthArray.push(month);
+    return month;
   };
 
   const getLineGraphData = (data) => {
@@ -44,26 +61,40 @@ const LineGraph = ({ data = [] }) => {
       <div className="line" style={{ height: "400px" }}>
         <ResponsiveLine
           data={dataLine}
+          // curve="basis"
           margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-          xScale={{ type: "point" }}
+          xScale={{
+            type: "time",
+            format: "%Y-%m-%d",
+            useUTC: false,
+            precision: "day",
+          }}
+          xFormat="time:%Y-%m-%d"
           yScale={{
             type: "linear",
-            min: "auto",
+            min: 0,
             max: "auto",
-            stacked: true,
+            stacked: false,
             reverse: false,
           }}
           yFormat=" >-.2f"
           axisTop={null}
           axisRight={null}
           axisBottom={{
+            format: "%b %d",
+            tickvalues: "every 2 days",
+
+            // format: (value) => {
+            //   return formatDate(value);
+            // },
+
             orient: "bottom",
             tickSize: 5,
             tickPadding: 5,
-            tickRotation: 0,
-            // legend: "transportation",
-            legendOffset: 36,
-            legendPosition: "middle",
+            tickRotation: 90,
+            // // legend: "transportation",
+            // legendOffset: 36,
+            // legendPosition: "middle",
           }}
           axisLeft={{
             orient: "left",
@@ -74,7 +105,7 @@ const LineGraph = ({ data = [] }) => {
             legendOffset: -40,
             legendPosition: "middle",
           }}
-          pointSize={10}
+          pointSize={5}
           pointColor={{ theme: "background" }}
           pointBorderWidth={2}
           pointBorderColor={{ from: "serieColor" }}

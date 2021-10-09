@@ -89,7 +89,7 @@ function App() {
         <InputForm loadReport={loadReport} />
       </DisplayModal>
       {/* <BarGraph data={dataBar} /> */}
-      <LineGraph data={dataAPITrend} />
+      <LineGraph data={dataAPITrend} startDate={startDate} endDate={endDate} />
       <Table data={dataAPIAgg} />
     </div>
   );
