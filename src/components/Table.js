@@ -14,9 +14,6 @@ export const Table = ({ data = [] }) => {
   const onGridReady = (params) => {
     setGridApi(params.api);
     setColumnApi(params.columnApi);
-    // const sortModel = [{ colId: "visits", sort: "desc" }];
-    // gridApi.setSortModel(sortModel);
-    // columnApi.applyColumnState({ state: [{ colId: "Visits", sort: "desc" }] });
   };
 
   const onFirstDataRendered = (params) => {};

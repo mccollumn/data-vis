@@ -6,12 +6,6 @@ import Drawer from "@material-ui/core/Drawer";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
-import Tabs from "@material-ui/core/Tabs";
-import Tab from "@material-ui/core/Tab";
-import Box from "@material-ui/core/Box";
 import Divider from "@material-ui/core/Divider";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import CircularProgress from "@material-ui/core/CircularProgress";
@@ -24,11 +18,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  OutlinedInput,
 } from "@material-ui/core";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import { useForm } from "react-hook-form";
-import getData from "../services/wtData";
 import { useGetData } from "../services/wtData";
 import { AuthContext, AuthProvider } from "../providers/AuthProvider";
 
@@ -211,7 +201,6 @@ const TrendSelection = ({ trend, setTrend }) => {
       <Select value={trend} onChange={handleChange} defaultValue={"none"}>
         <MenuItem value={"none"}>None</MenuItem>
         <MenuItem value={"daily"}>Daily</MenuItem>
-        {/* <MenuItem value={"monthly"}>Monthly</MenuItem> */}
       </Select>
       <FormHelperText>Trend the table data</FormHelperText>
     </FormControl>
