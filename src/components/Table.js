@@ -14,6 +14,9 @@ export const Table = ({ data = [] }) => {
   const onGridReady = (params) => {
     setGridApi(params.api);
     setColumnApi(params.columnApi);
+    // const sortModel = [{ colId: "visits", sort: "desc" }];
+    // gridApi.setSortModel(sortModel);
+    // columnApi.applyColumnState({ state: [{ colId: "Visits", sort: "desc" }] });
   };
 
   const onFirstDataRendered = (params) => {};
@@ -147,6 +150,7 @@ const getMeasureNames = (data) => {
 
 const getTotals = (data) => {
   if (!data || data.length === 0) return [];
+  if (data.data.length > 1) return [];
   return [data.data[0].measures];
 };
 

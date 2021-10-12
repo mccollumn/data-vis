@@ -25,6 +25,7 @@ function App() {
   const [report, setReport] = React.useState();
   const [startDate, setStartDate] = React.useState();
   const [endDate, setEndDate] = React.useState();
+  const [trend, setTrend] = React.useState("none");
 
   const loadTrendReport = React.useCallback(
     async (profileID, reportID, params) => {
@@ -60,13 +61,13 @@ function App() {
         language: "en-US",
         format: "json",
         suppress_error_codes: false,
-        period_type: "agg",
+        period_type: trend === "none" ? "agg" : "indv",
       };
 
       loadTrendReport(profileID, reportID, paramsTrend);
       loadAggReport(profileID, reportID, paramsAgg);
     },
-    [loadAggReport, loadTrendReport]
+    [loadAggReport, loadTrendReport, trend]
   );
 
   React.useEffect(() => {
@@ -83,6 +84,8 @@ function App() {
         setReport={setReport}
         setStartDate={setStartDate}
         setEndDate={setEndDate}
+        trend={trend}
+        setTrend={setTrend}
       />
       <DisplayModal>
         <ModalAction />

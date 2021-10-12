@@ -18,6 +18,14 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import TextField from "@material-ui/core/TextField";
 import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
+import {
+  FormControl,
+  FormHelperText,
+  InputLabel,
+  Select,
+  MenuItem,
+  OutlinedInput,
+} from "@material-ui/core";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import { useForm } from "react-hook-form";
 import getData from "../services/wtData";
@@ -29,6 +37,9 @@ const useStyles = makeStyles((theme) => ({
   title: { flexGrow: 1 },
   form: { display: "grid", padding: "10px" },
   menuButton: { marginRight: theme.spacing(2) },
+  formControl: {
+    margin: theme.spacing(1),
+  },
 }));
 
 export const TopNav = ({
@@ -37,6 +48,8 @@ export const TopNav = ({
   setReport,
   setStartDate,
   setEndDate,
+  trend,
+  setTrend,
 }) => {
   const classes = useStyles();
 
@@ -87,6 +100,7 @@ export const TopNav = ({
           setProfile={setProfile}
           setReport={setReport}
         />
+        <TrendSelection setTrend={setTrend} />
       </Drawer>
     </div>
   );
@@ -181,6 +195,26 @@ const ProfileReportList = ({
         />
       )}
     />
+  );
+};
+
+const TrendSelection = ({ trend, setTrend }) => {
+  const classes = useStyles();
+
+  const handleChange = (event) => {
+    setTrend(event.target.value);
+  };
+
+  return (
+    <FormControl className={classes.formControl}>
+      <InputLabel shrink>Trend</InputLabel>
+      <Select value={trend} onChange={handleChange} defaultValue={"none"}>
+        <MenuItem value={"none"}>None</MenuItem>
+        <MenuItem value={"daily"}>Daily</MenuItem>
+        {/* <MenuItem value={"monthly"}>Monthly</MenuItem> */}
+      </Select>
+      <FormHelperText>Trend the table data</FormHelperText>
+    </FormControl>
   );
 };
 

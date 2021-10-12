@@ -11,7 +11,7 @@ const getAttributes = (obj, entry) => {
 
 const getRowData = (data) => {
   if (data.length === 0) return [];
-  const allRows = data.data[0].SubRows[0];
+  const isTrend = data.data.length > 1 ? true : false;
   let tableData = [];
 
   const getRow = (obj, level = 0, prevColValues = []) => {
@@ -38,7 +38,22 @@ const getRowData = (data) => {
     });
   };
 
-  getRow(allRows);
+  if (isTrend) {
+    data.data.forEach((period) => {
+      const periodDate = period.start_date;
+      const row = { Dimensions: [periodDate] };
+
+      for (const [measure, measureValue] of Object.entries(period.measures)) {
+        row[measure] = measureValue;
+      }
+      tableData.push(row);
+
+      getRow(period.SubRows[0], 1, [periodDate]);
+    });
+  } else {
+    const allRows = data.data[0].SubRows[0];
+    getRow(allRows);
+  }
 
   return tableData;
 };
