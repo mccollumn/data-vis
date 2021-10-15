@@ -112,13 +112,14 @@ export const Table = ({ data = [] }) => {
         }}
         onFilterModified={function (props) {}}
       >
-        {columns.map((column) => (
+        {columns.map((column, i) => (
           <AgGridColumn
             {...column}
             key={column.field}
             valueFormatter={valueFormatter}
             filter="agNumberColumnFilter"
             filterParams={filterParams}
+            sort={i === 0 ? "desc" : ""}
           />
         ))}
       </AgGridReact>
