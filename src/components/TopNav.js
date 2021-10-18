@@ -21,6 +21,12 @@ import {
 } from "@material-ui/core";
 import { useGetData } from "../services/wtData";
 import { AuthContext, AuthProvider } from "../providers/AuthProvider";
+import {
+  MuiPickersUtilsProvider,
+  KeyboardDatePicker,
+} from "@material-ui/pickers";
+import "date-fns";
+import DateFnsUtils from "@date-io/date-fns";
 
 const useStyles = makeStyles((theme) => ({
   root: { flexGrow: 1 },
@@ -36,8 +42,8 @@ export const TopNav = ({
   setProfile,
   profile,
   setReport,
-  setStartDate,
-  setEndDate,
+  dates,
+  setDates,
   trend,
   setTrend,
 }) => {
@@ -77,7 +83,7 @@ export const TopNav = ({
           <ChevronLeftIcon />
         </IconButton>
         <Divider />
-        <DateSelection setStartDate={setStartDate} setEndDate={setEndDate} />
+        <DateSelection dates={dates} setDates={setDates} />
         <ProfileReportList
           auth={auth}
           setProfile={setProfile}
@@ -96,33 +102,36 @@ export const TopNav = ({
   );
 };
 
-const DateSelection = ({ setStartDate, setEndDate }) => {
-  const handleChange = (event) => {
-    if (event.target.name === "start_date") {
-      setStartDate(event.target.value);
-    }
-    if (event.target.name === "end_date") {
-      setEndDate(event.target.value);
-    }
+const DateSelection = ({ dates, setDates }) => {
+  const handleChange = (name) => (date) => {
+    setDates({
+      ...dates,
+      [name]: { date: date, dateStr: dates.createDateStr(date) },
+    });
   };
 
   return (
     <div>
-      <TextField
-        label="Start Date"
-        name="start_date"
-        type="date"
-        onChange={handleChange}
-        InputLabelProps={{ shrink: true }}
-      />
-
-      <TextField
-        label="End Date"
-        name="end_date"
-        type="date"
-        onChange={handleChange}
-        InputLabelProps={{ shrink: true }}
-      />
+      <MuiPickersUtilsProvider utils={DateFnsUtils}>
+        <KeyboardDatePicker
+          label="Start Date"
+          value={dates.startDate.date}
+          variant="dialog"
+          onChange={handleChange("startDate")}
+          disableFuture={true}
+          format="yyyy-MM-dd"
+          showTodayButton={true}
+        />
+        <KeyboardDatePicker
+          label="End Date"
+          value={dates.endDate.date}
+          variant="dialog"
+          onChange={handleChange("endDate")}
+          disableFuture={true}
+          format="yyyy-MM-dd"
+          showTodayButton={true}
+        />
+      </MuiPickersUtilsProvider>
     </div>
   );
 };

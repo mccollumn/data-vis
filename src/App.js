@@ -5,6 +5,7 @@ import LineGraph from "./components/LineGraph";
 import Table from "./components/Table";
 import TopNav from "./components/TopNav";
 import { useGetData } from "./services/wtData";
+import DateFnsUtils from "@date-io/date-fns";
 
 function App() {
   const { response: dataAPITrend, makeRequest: trendMakeRequest } =
@@ -13,11 +14,23 @@ function App() {
   console.log("Agg response:", dataAPIAgg);
   console.log("Trend response:", dataAPITrend);
 
+  const dateFns = new DateFnsUtils({ dateFormat: "fullDate" });
+  const createDateStr = (date) =>
+    `${dateFns.getYear(date)}m${
+      dateFns.getMonth(date) + 1
+    }d${dateFns.getDayText(date)}`;
+
+  const today = new Date();
+  const dateObj = {
+    startDate: { date: today, dateStr: createDateStr(today) },
+    endDate: { date: today, dateStr: createDateStr(today) },
+    createDateStr,
+  };
+
   const [profile, setProfile] = React.useState();
   const [report, setReport] = React.useState();
-  const [startDate, setStartDate] = React.useState();
-  const [endDate, setEndDate] = React.useState();
   const [trend, setTrend] = React.useState("none");
+  const [dates, setDates] = React.useState(dateObj);
 
   const loadTrendReport = React.useCallback(
     async (profileID, reportID, params) => {
@@ -35,12 +48,9 @@ function App() {
 
   const loadReport = React.useCallback(
     async (profileID, reportID, startDate, endDate) => {
-      const start = startDate.replace("-", "m").replace("-", "d");
-      const end = endDate.replace("-", "m").replace("-", "d");
-
       const paramsTrend = {
-        start_period: start,
-        end_period: end,
+        start_period: dates.startDate.dateStr,
+        end_period: dates.endDate.dateStr,
         language: "en-US",
         format: "json",
         suppress_error_codes: false,
@@ -48,8 +58,8 @@ function App() {
         period_type: "trend",
       };
       const paramsAgg = {
-        start_period: start,
-        end_period: end,
+        start_period: dates.startDate.dateStr,
+        end_period: dates.endDate.dateStr,
         language: "en-US",
         format: "json",
         suppress_error_codes: false,
@@ -59,14 +69,26 @@ function App() {
       loadTrendReport(profileID, reportID, paramsTrend);
       loadAggReport(profileID, reportID, paramsAgg);
     },
-    [loadAggReport, loadTrendReport, trend]
+    [
+      loadAggReport,
+      loadTrendReport,
+      dates.startDate.dateStr,
+      dates.endDate.dateStr,
+      trend,
+    ]
   );
 
   React.useEffect(() => {
-    if (profile && report && startDate && endDate) {
-      loadReport(profile.ID, report.ID, startDate, endDate);
+    if (profile && report && dates.startDate.dateStr && dates.endDate.dateStr) {
+      loadReport(profile.ID, report.ID);
     }
-  }, [profile, report, startDate, endDate, loadReport]);
+  }, [
+    profile,
+    report,
+    dates.startDate.dateStr,
+    dates.endDate.dateStr,
+    loadReport,
+  ]);
 
   return (
     <div className="App">
@@ -74,12 +96,16 @@ function App() {
         setProfile={setProfile}
         profile={profile}
         setReport={setReport}
-        setStartDate={setStartDate}
-        setEndDate={setEndDate}
+        dates={dates}
+        setDates={setDates}
         trend={trend}
         setTrend={setTrend}
       />
-      <LineGraph data={dataAPITrend} startDate={startDate} endDate={endDate} />
+      <LineGraph
+        data={dataAPITrend}
+        startDate={dates.startDate.dateStr}
+        endDate={dates.endDate.dateStr}
+      />
       <Table data={dataAPIAgg} />
     </div>
   );
