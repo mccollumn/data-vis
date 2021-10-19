@@ -36,12 +36,21 @@ const LineGraph = ({ data = [], startDate, endDate }) => {
       line.id = itemName;
       line.data = [];
 
-      const rows = item[itemName].SubRows;
-      for (const row of rows) {
+      const recordPoint = (row) => {
         let point = {};
         point.x = row.start_date;
         point.y = row.measures[getPrimaryMeasure(data).name];
         line.data.push(point);
+      };
+
+      const rows = item[itemName].SubRows;
+      // json structure is different when the trend only includes one day
+      if (Array.isArray(rows)) {
+        for (const row of rows) {
+          recordPoint(row);
+        }
+      } else {
+        recordPoint(rows);
       }
 
       graphData.push(line);
