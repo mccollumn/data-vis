@@ -57,7 +57,7 @@ const LineGraph = ({ data = [], startDate, endDate }) => {
   console.log("Line Data:", dataLine);
 
   return (
-    <div className="App">
+    <div className="Graph" style={{ marginBottom: 20 }}>
       <div className="line" style={{ height: "400px" }}>
         <ResponsiveLine
           data={dataLine}

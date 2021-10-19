@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -29,18 +29,24 @@ import "date-fns";
 import DateFnsUtils from "@date-io/date-fns";
 
 const useStyles = makeStyles((theme) => ({
-  root: { flexGrow: 1 },
   title: { flexGrow: 1 },
   form: { display: "grid", padding: "10px" },
+  formField: { margin: theme.spacing(1) },
   menuButton: { marginRight: theme.spacing(2) },
+  iconButton: { width: 40, marginLeft: 260 },
   formControl: {
     margin: theme.spacing(1),
+    width: 300,
   },
+  dates: { width: 300, margin: theme.spacing(1) },
+  datePicker: { width: 300, marginTop: theme.spacing(1) },
+  textField: { width: 300, margin: theme.spacing(1) },
 }));
 
 export const TopNav = ({
   setProfile,
   profile,
+  report,
   setReport,
   dates,
   setDates,
@@ -62,7 +68,7 @@ export const TopNav = ({
   };
 
   return (
-    <div className={classes.root}>
+    <div>
       <AppBar position="static">
         <Toolbar>
           <IconButton
@@ -78,31 +84,36 @@ export const TopNav = ({
           <Login />
         </Toolbar>
       </AppBar>
-      <Drawer variant="persistent" anchor="left" open={open}>
-        <IconButton onClick={handleDrawerClose}>
+      <Drawer variant="persistant" anchor="left" open={open}>
+        <IconButton onClick={handleDrawerClose} className={classes.iconButton}>
           <ChevronLeftIcon />
         </IconButton>
         <Divider />
-        <DateSelection dates={dates} setDates={setDates} />
+        <DateSelection dates={dates} setDates={setDates} auth={auth} />
         <ProfileReportList
           auth={auth}
+          profile={profile}
+          report={report}
           setProfile={setProfile}
           setReport={setReport}
         />
         <ProfileReportList
           auth={auth}
           profile={profile}
+          report={report}
           isReport={true}
           setProfile={setProfile}
           setReport={setReport}
         />
-        <TrendSelection setTrend={setTrend} />
+        <TrendSelection trend={trend} setTrend={setTrend} auth={auth} />
       </Drawer>
     </div>
   );
 };
 
-const DateSelection = ({ dates, setDates }) => {
+const DateSelection = ({ dates, setDates, auth }) => {
+  const classes = useStyles();
+
   const handleChange = (name) => (date) => {
     setDates({
       ...dates,
@@ -111,9 +122,10 @@ const DateSelection = ({ dates, setDates }) => {
   };
 
   return (
-    <div>
+    <div className={classes.dates}>
       <MuiPickersUtilsProvider utils={DateFnsUtils}>
         <KeyboardDatePicker
+          className={classes.datePicker}
           label="Start Date"
           value={dates.startDate.date}
           variant="dialog"
@@ -121,8 +133,10 @@ const DateSelection = ({ dates, setDates }) => {
           disableFuture={true}
           format="yyyy-MM-dd"
           showTodayButton={true}
+          disabled={!auth && true}
         />
         <KeyboardDatePicker
+          className={classes.datePicker}
           label="End Date"
           value={dates.endDate.date}
           variant="dialog"
@@ -130,6 +144,7 @@ const DateSelection = ({ dates, setDates }) => {
           disableFuture={true}
           format="yyyy-MM-dd"
           showTodayButton={true}
+          disabled={!auth && true}
         />
       </MuiPickersUtilsProvider>
     </div>
@@ -138,17 +153,35 @@ const DateSelection = ({ dates, setDates }) => {
 
 const ProfileReportList = ({
   profile = {},
+  report = {},
   auth,
   isReport,
   setProfile,
   setReport,
 }) => {
+  const classes = useStyles();
+
   const [open, setOpen] = React.useState(false);
+  const [defaultValue, setDefaultValue] = React.useState();
   const { response: options = [], loading, error, makeRequest } = useGetData();
 
   React.useEffect(() => {
-    makeRequest({ params: { format: "json" }, profileID: profile.ID });
-  }, [profile.ID, makeRequest]);
+    if (!options.length) return;
+    if (isReport) {
+      const reportOption = options.find((o) => o.ID === report.ID);
+      setDefaultValue(reportOption);
+    } else {
+      const profileOption = options.find((o) => o.ID === profile.ID);
+      setDefaultValue(profileOption);
+    }
+  }, [profile.ID, report.ID, options, isReport]);
+
+  React.useEffect(() => {
+    makeRequest({
+      params: { format: "json" },
+      profileID: isReport ? profile.ID : "",
+    });
+  }, [profile.ID, isReport, makeRequest]);
 
   const handleChange = (event, value) => {
     if (value === null) return;
@@ -162,7 +195,6 @@ const ProfileReportList = ({
   return (
     <Autocomplete
       disabled={!auth && true}
-      style={{ width: 300 }}
       open={open}
       onOpen={() => {
         setOpen(true);
@@ -175,11 +207,13 @@ const ProfileReportList = ({
       getOptionLabel={(option) => option.name}
       options={options}
       loading={loading}
+      value={defaultValue || null}
       renderInput={(params) => (
         <TextField
           {...params}
+          className={classes.textField}
           label={isReport ? "Reports" : "Profiles"}
-          variant="filled"
+          variant="standard"
           InputProps={{
             ...params.InputProps,
             endAdornment: (
@@ -197,7 +231,7 @@ const ProfileReportList = ({
   );
 };
 
-const TrendSelection = ({ trend, setTrend }) => {
+const TrendSelection = ({ trend, setTrend, auth }) => {
   const classes = useStyles();
 
   const handleChange = (event) => {
@@ -205,9 +239,9 @@ const TrendSelection = ({ trend, setTrend }) => {
   };
 
   return (
-    <FormControl className={classes.formControl}>
+    <FormControl className={classes.formControl} disabled={!auth && true}>
       <InputLabel shrink>Trend</InputLabel>
-      <Select value={trend} onChange={handleChange} defaultValue={"none"}>
+      <Select value={trend} onChange={handleChange} defaultValue={trend}>
         <MenuItem value={"none"}>None</MenuItem>
         <MenuItem value={"daily"}>Daily</MenuItem>
       </Select>
@@ -251,8 +285,8 @@ const LoginForm = () => {
   const { setAuth } = React.useContext(AuthContext);
 
   const { status, makeRequest } = useGetData();
-  const [message, setMessage] = useState();
-  const [userCreds, setUserCreds] = useState();
+  const [message, setMessage] = React.useState();
+  const [userCreds, setUserCreds] = React.useState();
 
   React.useEffect(() => {
     if (!status) return;
@@ -281,9 +315,9 @@ const LoginForm = () => {
     setUserCreds(auth);
   };
 
-  const accountRef = useRef("");
-  const usernameRef = useRef("");
-  const passwordRef = useRef("");
+  const accountRef = React.useRef("");
+  const usernameRef = React.useRef("");
+  const passwordRef = React.useRef("");
 
   const [account, setAccount] = React.useState("");
   const [username, setUsername] = React.useState("");
@@ -292,6 +326,7 @@ const LoginForm = () => {
   return (
     <form onSubmit={onSubmit} className={classes.form}>
       <TextField
+        className={classes.formField}
         required
         label="Account Name"
         defaultValue={API_ACCOUNT}
@@ -300,6 +335,7 @@ const LoginForm = () => {
       />
 
       <TextField
+        className={classes.formField}
         required
         label="Username"
         defaultValue={API_USERNAME}
@@ -308,6 +344,7 @@ const LoginForm = () => {
       />
 
       <TextField
+        className={classes.formField}
         required
         type="password"
         label="Password"

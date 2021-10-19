@@ -3,6 +3,7 @@ import { AgGridColumn, AgGridReact } from "ag-grid-react";
 import "ag-grid-enterprise";
 import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-alpine-dark.css";
+import "ag-grid-community/dist/styles/ag-theme-alpine.css";
 import getRowData from "../services/getRowData";
 
 export const Table = ({ data = [] }) => {
@@ -81,7 +82,7 @@ export const Table = ({ data = [] }) => {
 
   const autoGroupColumnDef = {
     headerName: getDimColumns(dimensions),
-    minWidth: 200,
+    minWidth: 250,
     cellRendererParams: { suppressCount: true },
     sortable: true,
     pinned: "left",
@@ -91,7 +92,7 @@ export const Table = ({ data = [] }) => {
   const filterParams = { valueFormatter: valueFormatter };
 
   return (
-    <div className="ag-theme-alpine-dark" style={{ height: 400, width: "95%" }}>
+    <div className="ag-theme-alpine" style={{ height: 500, margin: 20 }}>
       <button onClick={onButtonClick}>Get selected rows</button>
       <AgGridReact
         onGridReady={onGridReady}

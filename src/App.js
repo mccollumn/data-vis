@@ -47,7 +47,7 @@ function App() {
   );
 
   const loadReport = React.useCallback(
-    async (profileID, reportID, startDate, endDate) => {
+    async (profileID, reportID) => {
       const paramsTrend = {
         start_period: dates.startDate.dateStr,
         end_period: dates.endDate.dateStr,
@@ -95,6 +95,7 @@ function App() {
       <TopNav
         setProfile={setProfile}
         profile={profile}
+        report={report}
         setReport={setReport}
         dates={dates}
         setDates={setDates}
