@@ -41,6 +41,14 @@ const useStyles = makeStyles((theme) => ({
   dates: { width: 300, margin: theme.spacing(1) },
   datePicker: { width: 300, marginTop: theme.spacing(1) },
   textField: { width: 300, margin: theme.spacing(1) },
+  loginMessage: {
+    width: 200,
+    textAlign: "center",
+    fontWeight: "bold",
+    marginTop: 20,
+  },
+  loginMessageSuccess: { color: "green" },
+  loginMessageFail: { color: "red" },
 }));
 
 export const TopNav = ({
@@ -288,13 +296,24 @@ const LoginForm = () => {
   const [message, setMessage] = React.useState();
   const [userCreds, setUserCreds] = React.useState();
 
+  const loginFailMessage = () => {
+    return (
+      <div>
+        <p className={classes.loginMessageFail}>Login Failed</p>
+        <p>If the browser opened a login prompt please cancel and try again</p>
+      </div>
+    );
+  };
+
   React.useEffect(() => {
     if (!status) return;
     if (status === 200) {
-      setMessage(<p>Login Successful</p>);
+      setMessage(
+        <p className={classes.loginMessageSuccess}>Login Successful</p>
+      );
       setAuth(userCreds);
     } else {
-      setMessage(<p>Login Failed</p>);
+      setMessage(loginFailMessage);
     }
   }, [setAuth, userCreds, status]);
 
@@ -354,7 +373,7 @@ const LoginForm = () => {
       />
 
       <Button type="submit">Login</Button>
-      <div>{message}</div>
+      <div className={classes.loginMessage}>{message}</div>
     </form>
   );
 };
