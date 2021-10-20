@@ -273,7 +273,6 @@ const Login = () => {
         variant="temporary"
         open={openLogin}
         onClose={toggleDrawer}
-        // onOpen={toggleDrawer}
       >
         <LoginForm />
       </Drawer>
@@ -282,8 +281,6 @@ const Login = () => {
 };
 
 const LoginForm = () => {
-  // Currently reading input values instead of updating onChange
-
   const API_ACCOUNT = process.env.REACT_APP_WT_API_ACCOUNT;
   const API_USERNAME = process.env.REACT_APP_WT_API_USERNAME;
   const API_PASSWORD = process.env.REACT_APP_WT_API_PASSWORD;
@@ -298,7 +295,7 @@ const LoginForm = () => {
 
   const loginFailMessage = () => {
     return (
-      <div>
+      <div className="fail_message" style={{ display: "none" }}>
         <p className={classes.loginMessageFail}>Login Failed</p>
         <p>If the browser opened a login prompt please cancel and try again</p>
       </div>
@@ -307,15 +304,14 @@ const LoginForm = () => {
 
   React.useEffect(() => {
     if (!status) return;
+    const loginSuccessMessage = () => {
+      return <p className={classes.loginMessageSuccess}>Login Successful</p>;
+    };
     if (status === 200) {
-      setMessage(
-        <p className={classes.loginMessageSuccess}>Login Successful</p>
-      );
+      setMessage(loginSuccessMessage);
       setAuth(userCreds);
-    } else {
-      setMessage(loginFailMessage);
     }
-  }, [setAuth, userCreds, status]);
+  }, [setAuth, userCreds, status, classes.loginMessageSuccess]);
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -325,22 +321,19 @@ const LoginForm = () => {
       password: passwordRef.current.value,
     };
 
-    // const auth = {
-    //   username: `${account}\\${username}`,
-    //   password: password,
-    // };
-
     makeRequest({ creds: auth });
     setUserCreds(auth);
+    setMessage(loginFailMessage);
+    setTimeout(() => {
+      if (document.querySelector(".fail_message")) {
+        document.querySelector(".fail_message").style.display = "block";
+      }
+    }, 1000);
   };
 
   const accountRef = React.useRef("");
   const usernameRef = React.useRef("");
   const passwordRef = React.useRef("");
-
-  const [account, setAccount] = React.useState("");
-  const [username, setUsername] = React.useState("");
-  const [password, setPassword] = React.useState("");
 
   return (
     <form onSubmit={onSubmit} className={classes.form}>
@@ -349,7 +342,6 @@ const LoginForm = () => {
         required
         label="Account Name"
         defaultValue={API_ACCOUNT}
-        onInput={(e) => setAccount(e.target.value)}
         inputRef={accountRef}
       />
 
@@ -358,7 +350,6 @@ const LoginForm = () => {
         required
         label="Username"
         defaultValue={API_USERNAME}
-        onInput={(e) => setUsername(e.target.value)}
         inputRef={usernameRef}
       />
 
@@ -368,7 +359,6 @@ const LoginForm = () => {
         type="password"
         label="Password"
         defaultValue={API_PASSWORD}
-        onInput={(e) => setPassword(e.target.value)}
         inputRef={passwordRef}
       />
 
