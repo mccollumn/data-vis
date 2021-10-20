@@ -4,6 +4,7 @@ import "./App.css";
 import LineGraph from "./components/LineGraph";
 import Table from "./components/Table";
 import TopNav from "./components/TopNav";
+import ReportInfo from "./components/ReportInfo";
 import { useGetData } from "./services/wtData";
 import DateFnsUtils from "@date-io/date-fns";
 
@@ -102,6 +103,7 @@ function App() {
         trend={trend}
         setTrend={setTrend}
       />
+      <ReportInfo report={report} />
       <LineGraph
         data={dataAPITrend}
         startDate={dates.startDate.dateStr}
