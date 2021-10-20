@@ -51,8 +51,14 @@ const getRowData = (data) => {
       getRow(period.SubRows[0], 1, [periodDate]);
     });
   } else {
-    const allRows = data.data[0].SubRows[0];
-    getRow(allRows);
+    // json structure is different when only one entry exists
+    if (Array.isArray(data.data[0].SubRows)) {
+      const allRows = data.data[0].SubRows[0];
+      getRow(allRows);
+    } else {
+      const allRows = data.data[0].SubRows;
+      getRow(allRows);
+    }
   }
 
   return tableData;
