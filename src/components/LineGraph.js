@@ -7,7 +7,18 @@ const LineGraph = ({ data = [], startDate, endDate }) => {
   const getPrimaryMeasure = (data) => {
     if (!data.definition) return "";
     const measures = data.definition.measures;
-    return measures.find((element) => element.columnID === 0);
+    const measure =
+      measures.find((element) => element.columnID === 0) || measures[0];
+    return measure;
+  };
+
+  const getMeasureName = (measure) => {
+    if (!measure) return "";
+    return measure.name.replace(/([A-Z])/g, " $1").trim();
+  };
+
+  const formatPointLabels = (obj) => {
+    return obj.point.data.yFormatted;
   };
 
   let monthArray = [];
@@ -27,13 +38,20 @@ const LineGraph = ({ data = [], startDate, endDate }) => {
     return month;
   };
 
+  const shorten = (str, len = 20) => {
+    if (str.length > len) {
+      return `...${str.slice(-len - 3)}`;
+    }
+    return str;
+  };
+
   const getLineGraphData = (data) => {
-    if (data.length === 0) return [];
+    if (!data.length && !data.data) return [];
     let graphData = [];
     for (const item of data.data) {
       let line = {};
       const itemName = Object.keys(item).pop();
-      line.id = itemName;
+      line.id = shorten(itemName);
       line.data = [];
 
       const recordPoint = (row) => {
@@ -70,8 +88,7 @@ const LineGraph = ({ data = [], startDate, endDate }) => {
       <div className="line" style={{ height: "400px" }}>
         <ResponsiveLine
           data={dataLine}
-          // curve="basis"
-          margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+          margin={{ top: 50, right: 60, bottom: 100, left: 60 }}
           xScale={{
             type: "time",
             format: "%Y-%m-%d",
@@ -92,25 +109,17 @@ const LineGraph = ({ data = [], startDate, endDate }) => {
           axisBottom={{
             format: "%b %d",
             tickvalues: "every 2 days",
-
-            // format: (value) => {
-            //   return formatDate(value);
-            // },
-
             orient: "bottom",
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 90,
-            // // legend: "transportation",
-            // legendOffset: 36,
-            // legendPosition: "middle",
           }}
           axisLeft={{
             orient: "left",
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 0,
-            legend: getPrimaryMeasure(data).name,
+            legend: getMeasureName(getPrimaryMeasure(data)),
             legendOffset: -40,
             legendPosition: "middle",
           }}
@@ -120,16 +129,17 @@ const LineGraph = ({ data = [], startDate, endDate }) => {
           pointBorderColor={{ from: "serieColor" }}
           pointLabelYOffset={-12}
           useMesh={true}
+          tooltip={formatPointLabels}
           legends={[
             {
-              anchor: "bottom-right",
-              direction: "column",
+              anchor: "bottom",
+              direction: "row",
               justify: false,
-              translateX: 100,
-              translateY: 0,
-              itemsSpacing: 0,
+              translateX: 0,
+              translateY: 80,
+              itemsSpacing: 5,
               itemDirection: "left-to-right",
-              itemWidth: 80,
+              itemWidth: 150,
               itemHeight: 20,
               itemOpacity: 0.75,
               symbolSize: 12,

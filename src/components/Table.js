@@ -6,11 +6,16 @@ import "ag-grid-community/dist/styles/ag-theme-alpine-dark.css";
 import "ag-grid-community/dist/styles/ag-theme-alpine.css";
 import getRowData from "../services/getRowData";
 
-export const Table = ({ data = [] }) => {
+export const Table = ({ data = [], loadTrendReport, profileID, trend }) => {
   const [gridApi, setGridApi] = React.useState(null);
   const [columnApi, setColumnApi] = React.useState(null);
   const gridRef = React.useRef(null);
   let isFiltered = false;
+
+  const { dimensions, measures, columns, totals, rowData } = React.useMemo(
+    () => renderData(data),
+    [data]
+  );
 
   const onGridReady = (params) => {
     setGridApi(params.api);
@@ -26,6 +31,42 @@ export const Table = ({ data = [] }) => {
       nameArray[index] = dim.name;
     });
     return nameArray.join(" > ");
+  };
+
+  const onRangeSelectionChanged = (event) => {
+    if (dimensions.length > 1 || trend !== "none") return;
+    const cellRanges = gridApi.getCellRanges();
+
+    cellRanges.forEach((range) => {
+      const startRow = Math.min(range.startRow.rowIndex, range.endRow.rowIndex);
+      const endRow = Math.max(range.startRow.rowIndex, range.endRow.rowIndex);
+      for (let rowIndex = startRow; rowIndex <= endRow; rowIndex++) {
+        range.columns.forEach((column) => {
+          const rowModel = gridApi.getModel();
+          const rowNode = rowModel.getRow(rowIndex);
+          const rowName = rowNode.key;
+          const query = `[${dimensions[0].name}] = '${rowName}'`;
+          const params = {
+            start_period: data.data[0].start_date
+              .replace("-", "m")
+              .replace("-", "d"),
+            end_period: data.data[0].end_date
+              .replace("-", "m")
+              .replace("-", "d"),
+            language: "en-US",
+            format: "json",
+            suppress_error_codes: false,
+            range: 5,
+            period_type: "trend",
+            query,
+            measures: data.definition.measures.findIndex(
+              (measure) => measure.name === column.colId
+            ),
+          };
+          loadTrendReport(profileID, data.definition.ID, params);
+        });
+      }
+    });
   };
 
   const valueFormatter = (params) => {
@@ -49,29 +90,18 @@ export const Table = ({ data = [] }) => {
     return measureFormatted;
   };
 
-  const onButtonClick = (e) => {
-    const selectedNodes = gridRef.current.api.getSelectedNodes();
-    const selectedData = selectedNodes.map((node) => node.data);
-    const selectedDataStringPresentation = selectedData
-      .map((node) => `${node.make} ${node.model}`)
-      .join(", ");
-    console.log(`Selected Table nodes: ${selectedDataStringPresentation}`);
-  };
-
   const updateTotals = () => {
     const columns = columnApi.columnModel.gridColumns;
     isFiltered = columns.some((column) => column.filterActive === true);
     gridApi.setPinnedBottomRowData(isFiltered ? false : totals);
   };
 
-  const { dimensions, measures, columns, totals, rowData } = React.useMemo(
-    () => renderData(data),
-    [data]
-  );
-
   const gridOptions = {
     pagination: true,
     paginationAutoPageSize: true,
+    enableCellTextSelection: true,
+    ensureDomOrder: true,
+    enableRangeSelection: true,
   };
 
   const defaultColDef = {
@@ -93,7 +123,6 @@ export const Table = ({ data = [] }) => {
 
   return (
     <div className="ag-theme-alpine" style={{ height: 500, margin: 20 }}>
-      <button onClick={onButtonClick}>Get selected rows</button>
       <AgGridReact
         onGridReady={onGridReady}
         onFirstDataRendered={onFirstDataRendered}
@@ -112,6 +141,7 @@ export const Table = ({ data = [] }) => {
           updateTotals();
         }}
         onFilterModified={function (props) {}}
+        onRangeSelectionChanged={onRangeSelectionChanged}
       >
         {columns.map((column, i) => (
           <AgGridColumn

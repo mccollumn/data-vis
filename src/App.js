@@ -1,5 +1,4 @@
 import React from "react";
-import _ from "lodash";
 import "./App.css";
 import LineGraph from "./components/LineGraph";
 import Table from "./components/Table";
@@ -109,7 +108,12 @@ function App() {
         startDate={dates.startDate.dateStr}
         endDate={dates.endDate.dateStr}
       />
-      <Table data={dataAPIAgg} />
+      <Table
+        data={dataAPIAgg}
+        loadTrendReport={loadTrendReport}
+        profileID={profile?.ID}
+        trend={trend}
+      />
     </div>
   );
 }
