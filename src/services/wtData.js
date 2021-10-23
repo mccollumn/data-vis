@@ -29,11 +29,9 @@ export const useGetData = () => {
         setResponse(response.data);
         setStatus(response.status);
         setLoading(false);
-
-        console.log("useGetData:", response);
       } catch (error) {
         setError(error);
-        console.error("Error", error);
+        console.error("Error Retrieving Data:", error);
       }
     },
     [auth]

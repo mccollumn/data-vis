@@ -11,8 +11,6 @@ function App() {
   const { response: dataAPITrend, makeRequest: trendMakeRequest } =
     useGetData();
   const { response: dataAPIAgg, makeRequest: aggMakeRequest } = useGetData();
-  console.log("Agg response:", dataAPIAgg);
-  console.log("Trend response:", dataAPITrend);
 
   const dateFns = new DateFnsUtils({ dateFormat: "fullDate" });
   const createDateStr = (date) =>

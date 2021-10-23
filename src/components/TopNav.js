@@ -20,7 +20,7 @@ import {
   MenuItem,
 } from "@material-ui/core";
 import { useGetData } from "../services/wtData";
-import { AuthContext, AuthProvider } from "../providers/AuthProvider";
+import { AuthContext } from "../providers/AuthProvider";
 import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
@@ -92,7 +92,7 @@ export const TopNav = ({
           <Login />
         </Toolbar>
       </AppBar>
-      <Drawer variant="persistant" anchor="left" open={open}>
+      <Drawer variant="persistent" anchor="left" open={open}>
         <IconButton onClick={handleDrawerClose} className={classes.iconButton}>
           <ChevronLeftIcon />
         </IconButton>
@@ -171,7 +171,7 @@ const ProfileReportList = ({
 
   const [open, setOpen] = React.useState(false);
   const [defaultValue, setDefaultValue] = React.useState();
-  const { response: options = [], loading, error, makeRequest } = useGetData();
+  const { response: options = [], loading, makeRequest } = useGetData();
 
   React.useEffect(() => {
     if (!options.length) return;

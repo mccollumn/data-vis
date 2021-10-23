@@ -21,23 +21,6 @@ const LineGraph = ({ data = [], startDate, endDate }) => {
     return obj.point.data.yFormatted;
   };
 
-  let monthArray = [];
-  const formatDate = (dateStr) => {
-    const day = dateStr.slice(8);
-    const month = dateStr.slice(5, 7);
-    const startMonth = startDate.slice(5, 7);
-    const endMonth = endDate.slice(5, 7);
-    const rangeMonths = endMonth - startMonth;
-    if (rangeMonths === 0) {
-      return day;
-    }
-    if (monthArray.includes(month)) {
-      return "-";
-    }
-    monthArray.push(month);
-    return month;
-  };
-
   const shorten = (str, len = 20) => {
     if (str.length > len) {
       return `...${str.slice(-len - 3)}`;
@@ -45,43 +28,41 @@ const LineGraph = ({ data = [], startDate, endDate }) => {
     return str;
   };
 
-  const getLineGraphData = (data) => {
-    if (!data.length && !data.data) return [];
-    let graphData = [];
-    for (const item of data.data) {
-      let line = {};
-      const itemName = Object.keys(item).pop();
-      line.id = shorten(itemName);
-      line.data = [];
-
-      const recordPoint = (row) => {
-        let point = {};
-        point.x = row.start_date;
-        point.y = row.measures[getPrimaryMeasure(data).name];
-        line.data.push(point);
-      };
-
-      const rows = item[itemName].SubRows;
-      // json structure is different when the trend only includes one day
-      if (Array.isArray(rows)) {
-        for (const row of rows) {
-          recordPoint(row);
-        }
-      } else {
-        recordPoint(rows);
-      }
-
-      graphData.push(line);
-    }
-    return graphData;
-  };
-
   React.useEffect(() => {
+    const getLineGraphData = (data) => {
+      if (!data.length && !data.data) return [];
+      let graphData = [];
+      for (const item of data.data) {
+        let line = {};
+        const itemName = Object.keys(item).pop();
+        line.id = shorten(itemName);
+        line.data = [];
+
+        const recordPoint = (row) => {
+          let point = {};
+          point.x = row.start_date;
+          point.y = row.measures[getPrimaryMeasure(data).name];
+          line.data.push(point);
+        };
+
+        const rows = item[itemName].SubRows;
+        // json structure is different when the trend only includes one day
+        if (Array.isArray(rows)) {
+          for (const row of rows) {
+            recordPoint(row);
+          }
+        } else {
+          recordPoint(rows);
+        }
+
+        graphData.push(line);
+      }
+      return graphData;
+    };
+
     if (data.length === 0) return;
     setDataLine(getLineGraphData(data));
   }, [data]);
-
-  console.log("Line Data:", dataLine);
 
   return (
     <div className="Graph" style={{ marginBottom: 20 }}>
