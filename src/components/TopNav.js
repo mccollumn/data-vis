@@ -293,25 +293,28 @@ const LoginForm = () => {
   const [message, setMessage] = React.useState();
   const [userCreds, setUserCreds] = React.useState();
 
-  const loginFailMessage = () => {
-    return (
-      <div className="fail_message" style={{ display: "none" }}>
-        <p className={classes.loginMessageFail}>Login Failed</p>
-        <p>If the browser opened a login prompt please cancel and try again</p>
-      </div>
-    );
-  };
-
   React.useEffect(() => {
     if (!status) return;
     const loginSuccessMessage = () => {
       return <p className={classes.loginMessageSuccess}>Login Successful</p>;
     };
+    const loginFailMessage = () => {
+      return <p className={classes.loginMessageFail}>Login Failed</p>;
+    };
+
     if (status === 200) {
       setMessage(loginSuccessMessage);
       setAuth(userCreds);
+      return;
     }
-  }, [setAuth, userCreds, status, classes.loginMessageSuccess]);
+    setMessage(loginFailMessage);
+  }, [
+    setAuth,
+    userCreds,
+    status,
+    classes.loginMessageSuccess,
+    classes.loginMessageFail,
+  ]);
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -323,12 +326,6 @@ const LoginForm = () => {
 
     makeRequest({ creds: auth });
     setUserCreds(auth);
-    setMessage(loginFailMessage);
-    setTimeout(() => {
-      if (document.querySelector(".fail_message")) {
-        document.querySelector(".fail_message").style.display = "block";
-      }
-    }, 1000);
   };
 
   const accountRef = React.useRef("");

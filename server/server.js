@@ -32,7 +32,7 @@ app.get("/getData", cors(corsOptions), async (req, res) => {
       const jsonResponse = await response.json();
       res.json(jsonResponse);
     } else {
-      res.status(400).send();
+      res.status(response.status).send();
     }
   } catch (error) {
     console.error(error);
