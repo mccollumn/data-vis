@@ -2,7 +2,8 @@ import axios from "axios";
 import React from "react";
 import { AuthContext } from "../providers/AuthProvider";
 
-const WT_API_ENDPOINT = "https://ws.webtrends.com/v3/Reporting/profiles/";
+const hostname = document.location.hostname;
+const WT_API_ENDPOINT = `http://${hostname}:5000/getData`;
 
 export const useGetData = () => {
   const [response, setResponse] = React.useState();
@@ -18,7 +19,7 @@ export const useGetData = () => {
       try {
         const url = !profileID
           ? WT_API_ENDPOINT
-          : `${WT_API_ENDPOINT}${profileID}/reports/${reportID}`;
+          : `${WT_API_ENDPOINT}?profileID=${profileID}&reportID=${reportID}`;
 
         setLoading(true);
 
