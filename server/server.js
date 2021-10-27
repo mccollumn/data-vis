@@ -1,9 +1,15 @@
 import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
+import path from "path";
+import { dirname } from "dirname-filename-esm";
 
-const PORT = 5000;
+const __dirname = dirname(import.meta);
+
+const PORT = 8080;
 const app = express();
+
+app.use(express.static(path.resolve(__dirname, "../build")));
 
 app.use(cors());
 const corsOptions = {
@@ -37,6 +43,10 @@ app.get("/getData", cors(corsOptions), async (req, res) => {
   } catch (error) {
     console.error(error);
   }
+});
+
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "../build", "index.html"));
 });
 
 app.listen(PORT);

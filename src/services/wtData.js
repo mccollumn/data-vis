@@ -2,8 +2,7 @@ import axios from "axios";
 import React from "react";
 import { AuthContext } from "../providers/AuthProvider";
 
-const hostname = document.location.hostname;
-const WT_API_ENDPOINT = `http://${hostname}:5000/getData`;
+const WT_API_ENDPOINT = `http://localhost:8080/getData`;
 
 export const useGetData = () => {
   const [response, setResponse] = React.useState();
