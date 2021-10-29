@@ -6,7 +6,7 @@ import { dirname } from "dirname-filename-esm";
 
 const __dirname = dirname(import.meta);
 
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 const app = express();
 
 app.use(express.static(path.resolve(__dirname, "../client/build")));
