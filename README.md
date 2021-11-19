@@ -12,7 +12,7 @@ https://wt-data-vis.herokuapp.com/
 
 ## Usage
 
-Start by loging in to your Webtrends Analytics account from the menu in the top right. Once your credentials have been validated, select the desired profile, report, and report period from the drawer on the left.
+Start by logging in to your Webtrends Analytics account, or enabling Demo Mode, from the menu in the top right. Once your credentials have been validated, select the desired profile, report, and report period from the drawer on the left.
 
 A graph will populate with the top 5 entries from the selected report, with the full report data available in the table below. Click a cell in the table to trend that value on the graph. Data can be filtered and sorted by interacting with the heading of each column in the table.
 
