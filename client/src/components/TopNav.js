@@ -4,6 +4,8 @@ import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Drawer from "@material-ui/core/Drawer";
 import Button from "@material-ui/core/Button";
+import Switch from "@material-ui/core/Switch";
+import { FormControlLabel } from "@material-ui/core";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import Divider from "@material-ui/core/Divider";
@@ -41,6 +43,14 @@ const useStyles = makeStyles((theme) => ({
   dates: { width: 300, margin: theme.spacing(1) },
   datePicker: { width: 300, marginTop: theme.spacing(1) },
   textField: { width: 300, margin: theme.spacing(1) },
+  loginDrawer: {
+    width: 250,
+    margin: 10,
+  },
+  loginDemoSwitch: {
+    width: 150,
+    paddingLeft: 50,
+  },
   loginMessage: {
     width: 200,
     textAlign: "center",
@@ -259,22 +269,63 @@ const TrendSelection = ({ trend, setTrend, auth }) => {
 };
 
 const Login = () => {
+  const classes = useStyles();
+
+  const { setAuth, demoMode, setDemoMode } = React.useContext(AuthContext);
   const [openLogin, setOpenLogin] = React.useState(false);
 
   const toggleDrawer = () => {
     setOpenLogin(!openLogin);
   };
 
+  const handleDemoChange = (event) => {
+    setDemoMode(event.target.checked);
+    setAuth(event.target.checked ? { demoMode: true } : null);
+  };
+  const demoDescription = (
+    <div>
+      <p>
+        Demo mode allows you to explore the interface even if you don't have
+        Webtrends credentials.
+      </p>
+      <p>Limitations:</p>
+      <ul>
+        <li>
+          The date range is static. Selecting dates has no effect on the demo
+          data.
+        </li>
+        <li>Clicking a cell in the table will not update the trend graph.</li>
+        <li>
+          The demo data isn't real, so the trend graphs are rather boring.
+        </li>
+      </ul>
+    </div>
+  );
+
   return (
     <div>
       <Button onClick={toggleDrawer}>Login</Button>
       <Drawer
+        className={classes.loginDrawer}
         anchor="right"
         variant="temporary"
         open={openLogin}
         onClose={toggleDrawer}
       >
-        <LoginForm />
+        <div className={classes.loginDrawer}>
+          <FormControlLabel
+            className={classes.loginDemoSwitch}
+            control={
+              <Switch
+                checked={demoMode}
+                onChange={handleDemoChange}
+                color="primary"
+              />
+            }
+            label="Demo Mode"
+          />
+          {demoMode ? demoDescription : <LoginForm />}
+        </div>
       </Drawer>
     </div>
   );

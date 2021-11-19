@@ -56,7 +56,6 @@ export const Table = ({ data = [], loadTrendReport, profileID, trend }) => {
             language: "en-US",
             format: "json",
             suppress_error_codes: false,
-            range: 5,
             period_type: "trend",
             query,
             measures: data.definition.measures.findIndex(

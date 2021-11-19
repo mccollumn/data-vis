@@ -3,6 +3,7 @@ import fetch from "node-fetch";
 import cors from "cors";
 import path from "path";
 import { dirname } from "dirname-filename-esm";
+import fs from "fs";
 
 const __dirname = dirname(import.meta);
 
@@ -19,6 +20,7 @@ const corsOptions = {
 const requestEndpoint = "https://ws.webtrends.com/v3/Reporting/profiles/";
 
 app.get("/getData", cors(corsOptions), async (req, res) => {
+  console.log("Get Data: ", req.query);
   const { profileID = "", reportID = "", ...params } = req.query;
   const queryStr = new URLSearchParams(params);
   const authHeader = req.header("authorization");
@@ -40,6 +42,24 @@ app.get("/getData", cors(corsOptions), async (req, res) => {
     } else {
       res.status(response.status).send();
     }
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+app.get("/getFile", cors(corsOptions), async (req, res) => {
+  const { filename, dir } = req.query;
+  try {
+    fs.readFile(
+      path.resolve(__dirname, "../client/src/data/", dir, filename),
+      { encoding: "utf8" },
+      (error, data) => {
+        if (error) {
+          res.send(error);
+        }
+        res.send(JSON.parse(data));
+      }
+    );
   } catch (error) {
     console.error(error);
   }
